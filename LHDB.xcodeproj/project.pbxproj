@@ -17,6 +17,7 @@
 		C924764A1D36257700BABA53 /* LHDBUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = C92476491D36257700BABA53 /* LHDBUITests.m */; };
 		C924765C1D36420B00BABA53 /* LHDictionary.c in Sources */ = {isa = PBXBuildFile; fileRef = C924765A1D36420B00BABA53 /* LHDictionary.c */; };
 		C92476601D3643EA00BABA53 /* LHArray.c in Sources */ = {isa = PBXBuildFile; fileRef = C924765E1D3643EA00BABA53 /* LHArray.c */; };
+		C95B49211D38C4950025C6EB /* LHSqlite.c in Sources */ = {isa = PBXBuildFile; fileRef = C95B491F1D38C4950025C6EB /* LHSqlite.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +58,8 @@
 		C924765B1D36420B00BABA53 /* LHDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LHDictionary.h; sourceTree = "<group>"; };
 		C924765E1D3643EA00BABA53 /* LHArray.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LHArray.c; sourceTree = "<group>"; };
 		C924765F1D3643EA00BABA53 /* LHArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LHArray.h; sourceTree = "<group>"; };
+		C95B491F1D38C4950025C6EB /* LHSqlite.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LHSqlite.c; sourceTree = "<group>"; };
+		C95B49201D38C4950025C6EB /* LHSqlite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LHSqlite.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -161,6 +164,8 @@
 		C92476581D3641DD00BABA53 /* LHDB */ = {
 			isa = PBXGroup;
 			children = (
+				C95B491F1D38C4950025C6EB /* LHSqlite.c */,
+				C95B49201D38C4950025C6EB /* LHSqlite.h */,
 			);
 			path = LHDB;
 			sourceTree = "<group>";
@@ -318,6 +323,7 @@
 				C92476291D36257700BABA53 /* AppDelegate.m in Sources */,
 				C92476601D3643EA00BABA53 /* LHArray.c in Sources */,
 				C92476261D36257700BABA53 /* main.m in Sources */,
+				C95B49211D38C4950025C6EB /* LHSqlite.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -543,6 +549,7 @@
 				C92476501D36257700BABA53 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		C92476511D36257700BABA53 /* Build configuration list for PBXNativeTarget "LHDBTests" */ = {
 			isa = XCConfigurationList;
@@ -551,6 +558,7 @@
 				C92476531D36257700BABA53 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		C92476541D36257700BABA53 /* Build configuration list for PBXNativeTarget "LHDBUITests" */ = {
 			isa = XCConfigurationList;
@@ -559,6 +567,7 @@
 				C92476561D36257700BABA53 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
