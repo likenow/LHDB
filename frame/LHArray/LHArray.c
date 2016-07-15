@@ -357,7 +357,7 @@ void lh_arrayReplaceValueAtIndex(LHArrayRef arrayRef,lh_int index,void* value)
     }
 }
 
-void lh_release(LHArrayRef arrayRef)
+void lh_arrayRelease(LHArrayRef arrayRef)
 {
     if (arrayRef == NULL) {
         return;

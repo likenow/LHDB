@@ -138,6 +138,6 @@ void lh_arrayReplaceValueAtIndex(LHArrayRef arrayRef,lh_int index,void* value);
 /**
  *@dis  释放数组占用的内存 释放后无法再次使用
  */
-void lh_release(LHArrayRef arrayRef);
+void lh_arrayRelease(LHArrayRef arrayRef);
 
 #endif /* LHArray_h */
