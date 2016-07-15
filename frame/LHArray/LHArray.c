@@ -8,57 +8,71 @@
 
 #include "LHArray.h"
 #include <stdlib.h>
+#include <string.h>
+
+#define __STATIC__INLINE static inline
 
 #define lh_array_malloc (struct lh_array*)malloc(sizeof(struct lh_array))
 
 #define lh_linknode_malloc (struct lh_LinkNode*)malloc(sizeof(struct lh_LinkNode))
 
-LHArrayRef lh_arrayCreate()
+__STATIC__INLINE bool lh_array_default_string_equal(const void* value1,const void* value2)
 {
-    struct lh_array* array = lh_array_malloc;
-    array->count = 0;
-
-    array->header = lh_linknode_malloc;
-    array->tail = lh_linknode_malloc;
-    
-    array->header->next = array->tail;
-    array->header->prev = NULL;
-    array->tail->prev = array->header;
-    array->tail->next = NULL;
-    
-    return *array;
+    return strcmp(value1, value2) == 0;
 }
 
-LHArrayRef lh_arrayCreateWithArray(LHArrayRef* arrayRef)
+LHArrayCallBacks lh_default_string_callback = {
+    (lh_arrayValueRetain)strdup,
+    (lh_arrayValueRelease)free,
+    lh_array_default_string_equal
+};
+
+LHArrayRef lh_arrayCreate()
 {
-    struct lh_array* array = lh_array_malloc;
-    array->count = 0;
-    array->header = lh_linknode_malloc;
-    array->tail = lh_linknode_malloc;
-    array->header->next = array->tail;
-    array->header->prev = NULL;
-    array->tail->prev = array->header;
-    array->tail->next = NULL;
+    return lh_arrayCreateWithCallBack(NULL);
+}
+
+LHArrayRef lh_arrayCreateWithArray(LHArrayRef arrayRef,LHArrayCallBacks* callbacks)
+{
+    struct lh_array* array = lh_arrayCreateWithCallBack(callbacks);
     
     struct lh_LinkNode* node = arrayRef->header;
     while (node&&node!=arrayRef->tail) {
         node = node->next;
         lh_arrayAppentValue(array, node->value);
     }
-    return *array;
+    return array;
 }
 
-lh_int lh_arrayGetCount(LHArrayRef* arrayRef)
+LHArrayRef lh_arrayCreateWithCallBack(LHArrayCallBacks* callbacks)
+{
+    struct lh_array* array = lh_array_malloc;
+    if (callbacks) {
+        array->callback = *callbacks;
+    }
+    array->count = 0;
+    array->header = lh_linknode_malloc;
+    array->tail = lh_linknode_malloc;
+    if (!array->header || !array->tail) {
+        return NULL;
+    }
+    array->header->next = array->tail;
+    array->header->prev = NULL;
+    array->tail->prev = array->header;
+    array->tail->next = NULL;
+    
+    return array;
+}
+
+lh_int lh_arrayGetCount(LHArrayRef arrayRef)
 {
     if (arrayRef == NULL) {
         return 0;
     }
-    
-    
     return arrayRef->count;
 }
 
-void lh_arrayApplyFunction(LHArrayRef* arrayRef,lh_arrayApplierFunction applier,void* context)
+void lh_arrayApplyFunction(LHArrayRef arrayRef,lh_arrayApplierFunction applier,void* context)
 {
     if (arrayRef == NULL) {
         return;
@@ -73,7 +87,28 @@ void lh_arrayApplyFunction(LHArrayRef* arrayRef,lh_arrayApplierFunction applier,
     }
 }
 
-void lh_arrayInsertValueAtIndex(LHArrayRef* arrayRef,lh_int index,void* value)
+__BOOL lh_arrayContainValue(LHArrayRef arrayRef,void* value)
+{
+    if (!arrayRef||!value||!(arrayRef->callback.release||arrayRef->count == 0)) {
+        return false;
+    }
+    
+    struct lh_LinkNode* node = arrayRef->header;
+    
+    while (node) {
+        node = node->next;
+        if (node == arrayRef->tail) {
+            return false;
+        }
+        
+        if (arrayRef->callback.equal(value,node->value)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void lh_arrayInsertValueAtIndex(LHArrayRef arrayRef,lh_int index,void* value)
 {
     if (arrayRef == NULL) {
         return;
@@ -83,7 +118,7 @@ void lh_arrayInsertValueAtIndex(LHArrayRef* arrayRef,lh_int index,void* value)
         return;
     }
     struct lh_LinkNode* insertNode = lh_linknode_malloc;
-    insertNode->value = value;
+    !(arrayRef->callback.retain) ? (insertNode->value = value) : (insertNode->value = arrayRef->callback.retain(value));
     struct lh_LinkNode* node = NULL;
     if (index >= count/2) {
         node = arrayRef->tail;
@@ -126,19 +161,19 @@ void lh_arrayInsertValueAtIndex(LHArrayRef* arrayRef,lh_int index,void* value)
     arrayRef->count += 1;
 }
 
-void lh_arrayAppentValue(LHArrayRef* arrayRef,void* value)
+void lh_arrayAppentValue(LHArrayRef arrayRef,void* value)
 {
     lh_int index = arrayRef->count;
     lh_arrayInsertValueAtIndex(arrayRef, index, value);
 }
 
-void lh_arrayPreppentValue(LHArrayRef* arrayRef,void* value)
+void lh_arrayPreppentValue(LHArrayRef arrayRef,void* value)
 {
     lh_int index = 0;
     lh_arrayInsertValueAtIndex(arrayRef, index, value);
 }
 
-void* lh_arrayGetValueWithIndex(LHArrayRef* arrayRef,lh_int index)
+void* lh_arrayGetValueWithIndex(LHArrayRef arrayRef,lh_int index)
 {
     if (arrayRef == NULL) {
         return NULL;
@@ -172,19 +207,19 @@ void* lh_arrayGetValueWithIndex(LHArrayRef* arrayRef,lh_int index)
     }
 }
 
-void* lh_arrayGetFirstValue(LHArrayRef* arrayRef)
+void* lh_arrayGetFirstValue(LHArrayRef arrayRef)
 {
     lh_int index = 0;
     return lh_arrayGetValueWithIndex(arrayRef, index);
 }
 
-void* lh_arrayGetLastValue(LHArrayRef* arrayRef)
+void* lh_arrayGetLastValue(LHArrayRef arrayRef)
 {
     lh_int index = arrayRef->count-1;
     return lh_arrayGetValueWithIndex(arrayRef, index);
 }
 
-void lh_arrayRemoveValueAtIndex(LHArrayRef* arrayRef,lh_int index)
+void lh_arrayRemoveValueAtIndex(LHArrayRef arrayRef,lh_int index)
 {
     if (arrayRef == NULL) {
         return;
@@ -203,6 +238,7 @@ void lh_arrayRemoveValueAtIndex(LHArrayRef* arrayRef,lh_int index)
         if (node) {
             node->prev->next = node->next;
             node->next->prev = node->prev;
+            !(arrayRef->callback.release) ? NULL:(arrayRef->callback.release(node->value));
             free(node);
         }else
             return;
@@ -215,6 +251,7 @@ void lh_arrayRemoveValueAtIndex(LHArrayRef* arrayRef,lh_int index)
         if (node) {
             node->prev->next = node->next;
             node->next->prev = node->prev;
+            !(arrayRef->callback.release) ? NULL:(arrayRef->callback.release(node->value));
             free(node);
         }else
             return;
@@ -222,25 +259,27 @@ void lh_arrayRemoveValueAtIndex(LHArrayRef* arrayRef,lh_int index)
     arrayRef->count -= 1;
 }
 
-void lh_arrayRemoveLastValue(LHArrayRef* arrayRef)
+void lh_arrayRemoveLastValue(LHArrayRef arrayRef)
 {
     lh_int index = arrayRef->count-1;
     lh_arrayRemoveValueAtIndex(arrayRef, index);
 }
 
-void lh_arrayRemoveFirstValue(LHArrayRef* arrayRef)
+void lh_arrayRemoveFirstValue(LHArrayRef arrayRef)
 {
     lh_int index = 0;
     lh_arrayRemoveValueAtIndex(arrayRef, index);
 }
 
-void lh_arrayRemoveAllValue(LHArrayRef* arrayRef)
+void lh_arrayRemoveAllValue(LHArrayRef arrayRef)
 {
     struct lh_LinkNode* node = arrayRef->header;
     while (node&&node!=arrayRef->tail) {
         node = node->next;
         if (node) {
+            !(arrayRef->callback.release) ? NULL:(arrayRef->callback.release(node->value));
             free(node);
+            node = NULL;
         }
     }
     arrayRef->header->next = arrayRef->tail;
@@ -248,7 +287,7 @@ void lh_arrayRemoveAllValue(LHArrayRef* arrayRef)
     arrayRef->count = 0;
 }
 
-void lh_arrayExchangeValuesAtIndexWithIndex(LHArrayRef* arrayRef,lh_int fromIndex,lh_int toIndex)
+void lh_arrayExchangeValuesAtIndexWithIndex(LHArrayRef arrayRef,lh_int fromIndex,lh_int toIndex)
 {
     if (arrayRef == NULL) {
         return;
@@ -285,7 +324,7 @@ void lh_arrayExchangeValuesAtIndexWithIndex(LHArrayRef* arrayRef,lh_int fromInde
     toNode->value = value;
 }
 
-void lh_arrayReplaceValueAtIndex(LHArrayRef* arrayRef,lh_int index,void* value)
+void lh_arrayReplaceValueAtIndex(LHArrayRef arrayRef,lh_int index,void* value)
 {
     if (arrayRef == NULL) {
         return;
@@ -303,7 +342,8 @@ void lh_arrayReplaceValueAtIndex(LHArrayRef* arrayRef,lh_int index,void* value)
             i--;
         }
         if (node) {
-            node->value = value;
+            !(arrayRef->callback.release) ? NULL:(arrayRef->callback.release(node->value));
+            !(arrayRef->callback.retain) ? (node->value = value):(node->value = (arrayRef->callback.retain(value)));
         }
     }else {
         node = arrayRef->header->next;
@@ -312,23 +352,22 @@ void lh_arrayReplaceValueAtIndex(LHArrayRef* arrayRef,lh_int index,void* value)
             index--;
         }
         if (node) {
-            node->value = value;
-        }
+            !(arrayRef->callback.release) ? NULL:(arrayRef->callback.release(node->value));
+            !(arrayRef->callback.retain) ? (node->value = value):(node->value = (arrayRef->callback.retain(value)));        }
     }
 }
 
-void lh_release(LHArrayRef* arrayRef)
+void lh_release(LHArrayRef arrayRef)
 {
     if (arrayRef == NULL) {
         return;
     }
-    struct lh_LinkNode* node = arrayRef->header;
-    while (node) {
-        free(node);
-        node = node->next;
-        if (node == arrayRef->tail) {
-            free(node);
-            return;
-        }
-    }
+    lh_arrayRemoveAllValue(arrayRef);
+    
+    free(arrayRef->header);
+    arrayRef->header = NULL;
+    free(arrayRef->tail);
+    arrayRef->tail = NULL;
+    free(arrayRef);
+    arrayRef = NULL;
 }

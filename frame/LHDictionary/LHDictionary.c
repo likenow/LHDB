@@ -10,6 +10,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define __STATIC__INLINE static inline
+
 static int maxNodeLength = 9;
 static const float _lh_map_resize_factor = 0.75;
 
@@ -36,12 +38,12 @@ struct _lh_map_t {
     map_value_callback value_callback;
 };
 
-static inline bool map_default_equal_callback(const void* key1,const void* key2)
+__STATIC__INLINE bool map_default_equal_callback(const void* key1,const void* key2)
 {
     return strcmp(key1, key2) == 0;
 }
 
-static inline u_long map_default_hash_callback(const void* key)
+__STATIC__INLINE u_long map_default_hash_callback(const void* key)
 {
     char* c = (char*)key;
     unsigned long ret=0;
@@ -307,25 +309,6 @@ void lh_dictionarySetValueForKey(LHDictionaryRef dictionaryRef,const void* key,c
             dictionaryRef->buckets[hash_num] = bucket;
         }
     }
-    
-//    if (bucket->count > maxNodeLength) {
-//        int index = 0;
-//        while (_lh_map_size_prime[index] < dictionaryRef->bucket_count) {
-//            index++;
-//        }
-//        if (index > 59) {
-//            index = 59;
-//        }
-//        lh_dictionaryResizeCount(dictionaryRef, _lh_map_size_prime[index+1]);
-//        
-//        u_long hash_num = (dictionaryRef->key_callback).hash(c) % dictionaryRef->bucket_count;
-//        bucket = dictionaryRef->buckets[hash_num];
-//        if (bucket == NULL) {
-//            bucket = calloc(1, sizeof(_lh_map_bucket_t));
-//            dictionaryRef->buckets[hash_num] = bucket;
-//        }
-//        
-//    }
     lh_map_value_set(dictionaryRef, bucket, key, value);
 }
 
