@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "LHDictionary.h"
+#import "unistd.h"
 
 #define __STATIC__INLINE static inline
 
@@ -98,6 +99,49 @@ __LHBOOL __LHSqliteOpen_e(LHSqliteRef sqliteRef,LHSqliteError* sql_error)
     }
     sqlite3_close(sqliteRef->_db);
     return false;
+}
+
+__LHBOOL __LHSqliteClose(LHSqliteRef sqliteRef)
+{
+    if (sqliteRef == NULL) {
+        return false;
+    }
+    if (sqlite3_close(sqliteRef->_db) == SQLITE_BUSY || sqlite3_close(sqliteRef->_db) == SQLITE_LOCKED) {
+        usleep(20);
+        if (sqlite3_close(sqliteRef->_db) != SQLITE_OK) {
+            return false;
+        }
+        return true;
+    }
+    
+    if (sqlite3_close(sqliteRef->_db) != SQLITE_OK) {
+        return false;
+    }
+    return true;
+}
+
+void __LHSqliteBindWithValue(LHSqliteRef sqliteRef,sqlite3_stmt* stmt,const void* name,const void* value,int blob_length,LHSqliteValueType bindType)
+{
+    switch (bindType) {
+        case LHSqliteValueINTEGER:
+            sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, name), *(int*)value);
+            break;
+        
+        case LHSqliteValueFLOAT:
+            sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, name), *(float*)value);
+            break;
+            
+        case LHSqliteValueTEXT:
+            sqlite3_bind_text(stmt, sqlite3_bind_parameter_index(stmt, name), value, -1, NULL);
+            break;
+            
+        case LHSqliteValueBLOB:
+            sqlite3_bind_blob(stmt, sqlite3_bind_parameter_index(stmt, name), value, blob_length, NULL);
+            break;
+            
+        default:
+            break;
+    }
 }
 
 void LHSqliteErrorFree(LHSqliteRef sqliteRef,LHSqliteError* sql_error)

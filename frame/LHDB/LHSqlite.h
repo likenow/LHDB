@@ -21,7 +21,12 @@ typedef void (*LHSqliteReleaseCallBack)(const void* value);
 typedef __LHBOOL (*LHSqliteEqualCallBack)(const void* value1,const void* value2);
 
 typedef enum LHSqliteValueType {
-    LHSqliteValueINTEGER
+    LHSqliteValueINTEGER = 1<<2,
+    LHSqliteValueFLOAT = 1<<3,
+    LHSqliteValueTEXT = 1<<4,
+    LHSqliteValueBLOB = 1<<5,
+    LHSqliteValueNULL = 1<<6
+    
 }LHSqliteValueType;
 
 typedef struct {
