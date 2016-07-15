@@ -40,4 +40,9 @@ extern LHSqliteCallBacks kLHSqliteDefaultStringCallBacks;
 
 typedef struct lh_sqlite* LHSqliteRef;
 
+LHSqliteRef __LHSqliteCreateWithFileName(const void* fileName);
+
+LHSqliteRef __LHSqliteCreateWithOptions(const void* fileName,LHSqliteCallBacks* callback);
+
+
 #endif /* LHSqlite_h */

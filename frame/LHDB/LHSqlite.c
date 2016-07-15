@@ -11,6 +11,7 @@
 #include <libkern/OSAtomic.h>
 #include <stdlib.h>
 #include <string.h>
+#include "LHDictionary.h"
 
 #define __STATIC__INLINE static inline
 
@@ -18,6 +19,7 @@ struct lh_sqlite {
     sqlite3* _db;
     const char* fileName;
     OSSpinLock _lock;
+    LHDictionaryRef _cacheStmt;
     LHSqliteCallBacks callback;
 };
 
@@ -46,25 +48,27 @@ __STATIC__INLINE sqlite3_stmt* __LHSqlitePrepareSql(LHSqliteRef sqliteRef,const 
 
 __STATIC__INLINE sqlite3_stmt* __LHSqliteBindValue(LHSqliteRef sqliteRef,const void* value,LHSqliteValueType type)
 {
-    
+    return NULL;
 }
 
 LHSqliteRef __LHSqliteCreateWithFileName(const void* fileName)
 {
-    LHSqliteRef sqlite = calloc(1, sizeof(LHSqliteRef));
-    sqlite->fileName = fileName;
-    return sqlite;
+    return __LHSqliteCreateWithOptions(fileName, NULL);
 }
 
-LHSqliteRef __LHSqliteCreate(const void* fileName,LHSqliteCallBacks* callback)
+LHSqliteRef __LHSqliteCreateWithOptions(const void* fileName,LHSqliteCallBacks* callback)
 {
     if (!fileName) {
         return NULL;
     }
     LHSqliteRef sqlite = calloc(1, sizeof(LHSqliteRef));
+    if (sqlite == NULL) {
+        return NULL;
+    }
     callback ? (sqlite->callback = *callback) : (sqlite->callback = kLHSqliteDefaultStringCallBacks);
     sqlite->fileName = sqlite->callback.retain(fileName);
     sqlite->_lock = OS_SPINLOCK_INIT;
+    sqlite->_cacheStmt = lh_dictionary_create_with_options(100, &lh_default_key_callback, NULL);
     return sqlite;
 }
 
