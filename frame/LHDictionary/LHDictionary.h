@@ -41,6 +41,8 @@ extern map_key_callback lh_default_key_callback;
 
 extern map_value_callback lh_string_value_callback;
 
+uint64_t lh_realCapacityWithCount(uint64_t count);
+
 /**
  @dis 创建字典对象 提供默认的capactity,hash函数
  */

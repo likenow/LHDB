@@ -11,6 +11,8 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <sqlite3.h>
+#include "LHArray.h"
 
 #define __LHBOOL bool
 
@@ -26,13 +28,22 @@ typedef enum LHSqliteValueType {
     LHSqliteValueTEXT = 1<<4,
     LHSqliteValueBLOB = 1<<5,
     LHSqliteValueNULL = 1<<6
-    
 }LHSqliteValueType;
 
 typedef struct {
     const char* error_msg;
     int error_code;
 }LHSqliteError;
+
+typedef struct {
+    LHSqliteValueType vale_type;
+    const void* value;
+}LHSqliteValue;
+
+typedef struct {
+    int blob_lenght;
+    const void* blob;
+}LHSqliteBlobValue;
 
 typedef struct {
     LHSqliteRetainCallBack retain;
@@ -45,9 +56,31 @@ extern LHSqliteCallBacks kLHSqliteDefaultStringCallBacks;
 
 typedef struct lh_sqlite* LHSqliteRef;
 
-LHSqliteRef __LHSqliteCreateWithFileName(const void* fileName);
+LHSqliteRef LHSqliteCreateWithFileName(const void* fileName);
 
-LHSqliteRef __LHSqliteCreateWithOptions(const void* fileName,LHSqliteCallBacks* callback);
+LHSqliteRef LHSqliteCreateWithOptions(const void* fileName,LHSqliteCallBacks* callback);
+
+__LHBOOL LHSqliteOpen(LHSqliteRef sqliteRef,__LHBOOL onLock);
+
+__LHBOOL LHSqliteOpen_e(LHSqliteRef sqliteRef,LHSqliteError** error,__LHBOOL onLock);
+
+sqlite3_stmt* LHSqlitePrepareSQL(LHSqliteRef sqliteRef,const char* zSql,LHSqliteError** error);
+
+void LHSqliteBindWithName(sqlite3_stmt* stmt,char* name,const void* value,int blob_length,LHSqliteValueType bindType);
+
+void LHSqliteBindWithIndex(sqlite3_stmt* stmt,int idx,const void* value,int blob_length,LHSqliteValueType bindType);
+
+void LHSqliteStepUpdate(LHSqliteRef sqliteRef,sqlite3_stmt* stmt,LHSqliteError** error);
+
+LHArrayRef LHSqliteStepQuery(LHSqliteRef sqliteRef,sqlite3_stmt* stmt,LHSqliteError** error);
+
+__LHBOOL LHSqliteClose(LHSqliteRef sqliteRef,__LHBOOL onLock);
+
+void LHSqliteErrorFree(LHSqliteRef sqliteRef,LHSqliteError* sql_error);
+
+void LHSqliteValueRelease(LHSqliteValue* value);
+
+void LHSqliteRelease(LHSqliteRef sqliteRef);
 
 
 #endif /* LHSqlite_h */

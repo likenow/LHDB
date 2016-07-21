@@ -17,7 +17,12 @@
 		C924764A1D36257700BABA53 /* LHDBUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = C92476491D36257700BABA53 /* LHDBUITests.m */; };
 		C924765C1D36420B00BABA53 /* LHDictionary.c in Sources */ = {isa = PBXBuildFile; fileRef = C924765A1D36420B00BABA53 /* LHDictionary.c */; };
 		C92476601D3643EA00BABA53 /* LHArray.c in Sources */ = {isa = PBXBuildFile; fileRef = C924765E1D3643EA00BABA53 /* LHArray.c */; };
+		C93788811D4112DE003DE538 /* NSArray+LHArray.m in Sources */ = {isa = PBXBuildFile; fileRef = C93788801D4112DE003DE538 /* NSArray+LHArray.m */; };
+		C93788871D4122CD003DE538 /* LHObjectInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = C93788841D4122CD003DE538 /* LHObjectInfo.m */; };
+		C93788881D4122CD003DE538 /* NSObject+LHModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C93788861D4122CD003DE538 /* NSObject+LHModel.m */; };
 		C95B49211D38C4950025C6EB /* LHSqlite.c in Sources */ = {isa = PBXBuildFile; fileRef = C95B491F1D38C4950025C6EB /* LHSqlite.c */; };
+		C9DD11241D3B709100B64C66 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD11231D3B709100B64C66 /* libsqlite3.tbd */; };
+		C9DD11271D3C8FEC00B64C66 /* NSDictionary+LHDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD11261D3C8FEC00B64C66 /* NSDictionary+LHDictionary.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,8 +63,17 @@
 		C924765B1D36420B00BABA53 /* LHDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LHDictionary.h; sourceTree = "<group>"; };
 		C924765E1D3643EA00BABA53 /* LHArray.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LHArray.c; sourceTree = "<group>"; };
 		C924765F1D3643EA00BABA53 /* LHArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LHArray.h; sourceTree = "<group>"; };
+		C937887F1D4112DE003DE538 /* NSArray+LHArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+LHArray.h"; sourceTree = "<group>"; };
+		C93788801D4112DE003DE538 /* NSArray+LHArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+LHArray.m"; sourceTree = "<group>"; };
+		C93788831D4122CD003DE538 /* LHObjectInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LHObjectInfo.h; sourceTree = "<group>"; };
+		C93788841D4122CD003DE538 /* LHObjectInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LHObjectInfo.m; sourceTree = "<group>"; };
+		C93788851D4122CD003DE538 /* NSObject+LHModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+LHModel.h"; sourceTree = "<group>"; };
+		C93788861D4122CD003DE538 /* NSObject+LHModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+LHModel.m"; sourceTree = "<group>"; };
 		C95B491F1D38C4950025C6EB /* LHSqlite.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LHSqlite.c; sourceTree = "<group>"; };
 		C95B49201D38C4950025C6EB /* LHSqlite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LHSqlite.h; sourceTree = "<group>"; };
+		C9DD11231D3B709100B64C66 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		C9DD11251D3C8FEC00B64C66 /* NSDictionary+LHDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+LHDictionary.h"; sourceTree = "<group>"; };
+		C9DD11261D3C8FEC00B64C66 /* NSDictionary+LHDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+LHDictionary.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,6 +81,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C9DD11241D3B709100B64C66 /* libsqlite3.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,6 +105,7 @@
 		C92476181D36257700BABA53 = {
 			isa = PBXGroup;
 			children = (
+				C9DD11231D3B709100B64C66 /* libsqlite3.tbd */,
 				C92476571D36417A00BABA53 /* frame */,
 				C92476231D36257700BABA53 /* LHDBDemo */,
 				C924763D1D36257700BABA53 /* LHDBTests */,
@@ -157,6 +173,7 @@
 				C924765D1D36422100BABA53 /* LHArray */,
 				C92476591D3641EA00BABA53 /* LHDictionary */,
 				C92476581D3641DD00BABA53 /* LHDB */,
+				C93788821D4122CD003DE538 /* LHModel */,
 			);
 			path = frame;
 			sourceTree = "<group>";
@@ -166,6 +183,10 @@
 			children = (
 				C95B491F1D38C4950025C6EB /* LHSqlite.c */,
 				C95B49201D38C4950025C6EB /* LHSqlite.h */,
+				C9DD11251D3C8FEC00B64C66 /* NSDictionary+LHDictionary.h */,
+				C9DD11261D3C8FEC00B64C66 /* NSDictionary+LHDictionary.m */,
+				C937887F1D4112DE003DE538 /* NSArray+LHArray.h */,
+				C93788801D4112DE003DE538 /* NSArray+LHArray.m */,
 			);
 			path = LHDB;
 			sourceTree = "<group>";
@@ -186,6 +207,18 @@
 				C924765F1D3643EA00BABA53 /* LHArray.h */,
 			);
 			path = LHArray;
+			sourceTree = "<group>";
+		};
+		C93788821D4122CD003DE538 /* LHModel */ = {
+			isa = PBXGroup;
+			children = (
+				C93788831D4122CD003DE538 /* LHObjectInfo.h */,
+				C93788841D4122CD003DE538 /* LHObjectInfo.m */,
+				C93788851D4122CD003DE538 /* NSObject+LHModel.h */,
+				C93788861D4122CD003DE538 /* NSObject+LHModel.m */,
+			);
+			name = LHModel;
+			path = ../LHModel;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -318,10 +351,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C93788871D4122CD003DE538 /* LHObjectInfo.m in Sources */,
 				C924762C1D36257700BABA53 /* ViewController.m in Sources */,
 				C924765C1D36420B00BABA53 /* LHDictionary.c in Sources */,
+				C93788811D4112DE003DE538 /* NSArray+LHArray.m in Sources */,
 				C92476291D36257700BABA53 /* AppDelegate.m in Sources */,
+				C93788881D4122CD003DE538 /* NSObject+LHModel.m in Sources */,
 				C92476601D3643EA00BABA53 /* LHArray.c in Sources */,
+				C9DD11271D3C8FEC00B64C66 /* NSDictionary+LHDictionary.m in Sources */,
 				C92476261D36257700BABA53 /* main.m in Sources */,
 				C95B49211D38C4950025C6EB /* LHSqlite.c in Sources */,
 			);

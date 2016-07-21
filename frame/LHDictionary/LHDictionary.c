@@ -17,7 +17,7 @@ static const float _lh_map_resize_factor = 0.75;
 
 struct _lh_map_node {
     void* key;
-    void* value;
+    const void* value;
     struct _lh_map_node* next;
 };
 
@@ -150,6 +150,15 @@ LHDictionaryRef lh_dictionary_create()
     return lh_dictionary_create_with_options(0, NULL, NULL);
 }
 
+uint64_t lh_realCapacityWithCount(uint64_t count)
+{
+    int index = 0;
+    while (_lh_map_size_prime[index] < count) {
+        index ++;
+    }
+    return _lh_map_size_prime[index];
+}
+
 LHDictionaryRef lh_dictionary_create_with_options(uint capacity,map_key_callback* keyCallback,map_value_callback* valueCallback)
 {
     if (capacity<3) {
@@ -210,7 +219,9 @@ void lh_map_value_set(LHDictionaryRef dictionaryRef,struct _lh_map_bucket* bucke
         if (headerNode == NULL) {
             struct _lh_map_node* node = calloc(1, sizeof(struct _lh_map_node));
             dictionaryRef->key_callback.retain ? (node->key =(dictionaryRef->key_callback.retain(key))) : (node->key = (char*)key);
-            (dictionaryRef->value_callback).retain ? node->value = ((dictionaryRef->value_callback).retain(value)):(node->value = (void*)value);
+            if ((dictionaryRef->value_callback).retain)
+                value = dictionaryRef->value_callback.retain(value);
+            node->value = value;
             bucket->first = node;
             bucket->tail = node;
             bucket->count += 1;
@@ -234,6 +245,7 @@ void lh_map_value_set(LHDictionaryRef dictionaryRef,struct _lh_map_bucket* bucke
         }
         headerNode = headerNode->next;
     }
+    
 }
 
 void lh_dictionaryResizeCount(LHDictionaryRef dictionaryRef,u_long new_count)
@@ -334,7 +346,7 @@ void* lh_dictionaryGetValueForKey(LHDictionaryRef dictionaryRef,const void* key)
             return NULL;
         }
         if ((dictionaryRef->key_callback).equal(c,(char*)node->key)) {
-            return node->value;
+            return (void*)node->value;
         }
         node = node->next;
     }

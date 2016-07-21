@@ -49,7 +49,8 @@ LHArrayRef lh_arrayCreateWithCallBack(LHArrayCallBacks* callbacks)
     struct lh_array* array = lh_array_malloc;
     if (callbacks) {
         array->callback = *callbacks;
-    }
+    }else
+        array->callback.retain = NULL;
     array->count = 0;
     array->header = lh_linknode_malloc;
     array->tail = lh_linknode_malloc;
@@ -118,6 +119,9 @@ void lh_arrayInsertValueAtIndex(LHArrayRef arrayRef,lh_int index,void* value)
         return;
     }
     struct lh_LinkNode* insertNode = lh_linknode_malloc;
+    if ((arrayRef->callback.retain)) {
+        
+    }
     !(arrayRef->callback.retain) ? (insertNode->value = value) : (insertNode->value = arrayRef->callback.retain(value));
     struct lh_LinkNode* node = NULL;
     if (index >= count/2) {
@@ -273,7 +277,7 @@ void lh_arrayRemoveFirstValue(LHArrayRef arrayRef)
 
 void lh_arrayRemoveAllValue(LHArrayRef arrayRef)
 {
-    struct lh_LinkNode* node = arrayRef->header;
+    struct lh_LinkNode* node = arrayRef->header->next;
     while (node&&node!=arrayRef->tail) {
         node = node->next;
         if (node) {
