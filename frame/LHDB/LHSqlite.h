@@ -13,6 +13,8 @@
 #include <stdbool.h>
 #include <sqlite3.h>
 #include "LHArray.h"
+#include "LHDictionary.h"
+#include <libkern/OSAtomic.h>
 
 #define __LHBOOL bool
 
@@ -46,33 +48,45 @@ typedef struct {
 }LHSqliteBlobValue;
 
 typedef struct {
-    LHSqliteRetainCallBack retain;
-    LHSqliteReleaseCallBack release;
-    LHSqliteEqualCallBack equal;
-}LHSqliteCallBacks;
+    int int_value;
+}LHSqliteIntValue;
 
-extern LHSqliteCallBacks kLHSqliteDefaultStringCallBacks;
+typedef struct {
+    float float_value;
+}LHSqliteFloatValue;
+
+struct lh_sqlite {
+    bool _isConnection;
+    sqlite3* _db;
+    const char* fileName;
+    OSSpinLock _lock;
+    LHDictionaryRef _cacheStmt;
+};
 
 
 typedef struct lh_sqlite* LHSqliteRef;
 
 LHSqliteRef LHSqliteCreateWithFileName(const void* fileName);
 
-LHSqliteRef LHSqliteCreateWithOptions(const void* fileName,LHSqliteCallBacks* callback);
-
 __LHBOOL LHSqliteOpen(LHSqliteRef sqliteRef,__LHBOOL onLock);
 
 __LHBOOL LHSqliteOpen_e(LHSqliteRef sqliteRef,LHSqliteError** error,__LHBOOL onLock);
 
+void LHSqliteClearStmtCache(LHSqliteRef sqliteRef);
+
 sqlite3_stmt* LHSqlitePrepareSQL(LHSqliteRef sqliteRef,const char* zSql,LHSqliteError** error);
 
-void LHSqliteBindWithName(sqlite3_stmt* stmt,char* name,const void* value,int blob_length,LHSqliteValueType bindType);
+void LHSqliteBindWithName(sqlite3_stmt* stmt,char* name,LHSqliteValue* value);
 
-void LHSqliteBindWithIndex(sqlite3_stmt* stmt,int idx,const void* value,int blob_length,LHSqliteValueType bindType);
+void LHSqliteBindWithIndex(sqlite3_stmt* stmt,int idx,LHSqliteValue* value);
 
 void LHSqliteStepUpdate(LHSqliteRef sqliteRef,sqlite3_stmt* stmt,LHSqliteError** error);
 
 LHArrayRef LHSqliteStepQuery(LHSqliteRef sqliteRef,sqlite3_stmt* stmt,LHSqliteError** error);
+
+void LHSqliteExecuteUpdate(LHSqliteRef sqliteRef,const char* zSql,LHDictionaryRef dictionary,LHSqliteError** error);
+
+LHArrayRef LHSqliteExecuteQuery(LHSqliteRef sqliteRef,const char* zSql,LHSqliteError** error);
 
 __LHBOOL LHSqliteClose(LHSqliteRef sqliteRef,__LHBOOL onLock);
 

@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C91C26A81D4F30D90073D055 /* NSObject+LHSqlite.m in Sources */ = {isa = PBXBuildFile; fileRef = C91C26A71D4F30D90073D055 /* NSObject+LHSqlite.m */; };
+		C91C26AB1D4F31410073D055 /* LHSqliteManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C91C26AA1D4F31410073D055 /* LHSqliteManager.m */; };
+		C91C26AE1D4FC6DF0073D055 /* Teacher.m in Sources */ = {isa = PBXBuildFile; fileRef = C91C26AD1D4FC6DF0073D055 /* Teacher.m */; };
 		C92476261D36257700BABA53 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C92476251D36257700BABA53 /* main.m */; };
 		C92476291D36257700BABA53 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C92476281D36257700BABA53 /* AppDelegate.m */; };
 		C924762C1D36257700BABA53 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C924762B1D36257700BABA53 /* ViewController.m */; };
@@ -16,13 +19,15 @@
 		C924763F1D36257700BABA53 /* LHDBTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C924763E1D36257700BABA53 /* LHDBTests.m */; };
 		C924764A1D36257700BABA53 /* LHDBUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = C92476491D36257700BABA53 /* LHDBUITests.m */; };
 		C924765C1D36420B00BABA53 /* LHDictionary.c in Sources */ = {isa = PBXBuildFile; fileRef = C924765A1D36420B00BABA53 /* LHDictionary.c */; };
-		C92476601D3643EA00BABA53 /* LHArray.c in Sources */ = {isa = PBXBuildFile; fileRef = C924765E1D3643EA00BABA53 /* LHArray.c */; };
 		C93788811D4112DE003DE538 /* NSArray+LHArray.m in Sources */ = {isa = PBXBuildFile; fileRef = C93788801D4112DE003DE538 /* NSArray+LHArray.m */; };
 		C937888E1D412569003DE538 /* LHObjectInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = C937888B1D412569003DE538 /* LHObjectInfo.m */; };
 		C937888F1D412569003DE538 /* NSObject+LHModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C937888D1D412569003DE538 /* NSObject+LHModel.m */; };
 		C95B49211D38C4950025C6EB /* LHSqlite.c in Sources */ = {isa = PBXBuildFile; fileRef = C95B491F1D38C4950025C6EB /* LHSqlite.c */; };
+		C9BBEC071D470969007D6464 /* NSObject+SQLStateMent.m in Sources */ = {isa = PBXBuildFile; fileRef = C9BBEC061D470969007D6464 /* NSObject+SQLStateMent.m */; };
+		C9BBEC0A1D47687C007D6464 /* LHPredicate.m in Sources */ = {isa = PBXBuildFile; fileRef = C9BBEC091D47687C007D6464 /* LHPredicate.m */; };
 		C9DD11241D3B709100B64C66 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD11231D3B709100B64C66 /* libsqlite3.tbd */; };
 		C9DD11271D3C8FEC00B64C66 /* NSDictionary+LHDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD11261D3C8FEC00B64C66 /* NSDictionary+LHDictionary.m */; };
+		C9E24D781D52761A0018DA5F /* LHArray.c in Sources */ = {isa = PBXBuildFile; fileRef = C9E24D761D52761A0018DA5F /* LHArray.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,6 +48,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C91C26A61D4F30D90073D055 /* NSObject+LHSqlite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+LHSqlite.h"; sourceTree = "<group>"; };
+		C91C26A71D4F30D90073D055 /* NSObject+LHSqlite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+LHSqlite.m"; sourceTree = "<group>"; };
+		C91C26A91D4F31410073D055 /* LHSqliteManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LHSqliteManager.h; sourceTree = "<group>"; };
+		C91C26AA1D4F31410073D055 /* LHSqliteManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LHSqliteManager.m; sourceTree = "<group>"; };
+		C91C26AC1D4FC6DF0073D055 /* Teacher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Teacher.h; sourceTree = "<group>"; };
+		C91C26AD1D4FC6DF0073D055 /* Teacher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Teacher.m; sourceTree = "<group>"; };
 		C92476211D36257700BABA53 /* LHDB.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LHDB.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C92476251D36257700BABA53 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		C92476271D36257700BABA53 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -61,8 +72,6 @@
 		C924764B1D36257700BABA53 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C924765A1D36420B00BABA53 /* LHDictionary.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LHDictionary.c; sourceTree = "<group>"; };
 		C924765B1D36420B00BABA53 /* LHDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LHDictionary.h; sourceTree = "<group>"; };
-		C924765E1D3643EA00BABA53 /* LHArray.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LHArray.c; sourceTree = "<group>"; };
-		C924765F1D3643EA00BABA53 /* LHArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LHArray.h; sourceTree = "<group>"; };
 		C937887F1D4112DE003DE538 /* NSArray+LHArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+LHArray.h"; sourceTree = "<group>"; };
 		C93788801D4112DE003DE538 /* NSArray+LHArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+LHArray.m"; sourceTree = "<group>"; };
 		C937888A1D412569003DE538 /* LHObjectInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LHObjectInfo.h; sourceTree = "<group>"; };
@@ -71,9 +80,15 @@
 		C937888D1D412569003DE538 /* NSObject+LHModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+LHModel.m"; sourceTree = "<group>"; };
 		C95B491F1D38C4950025C6EB /* LHSqlite.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LHSqlite.c; sourceTree = "<group>"; };
 		C95B49201D38C4950025C6EB /* LHSqlite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LHSqlite.h; sourceTree = "<group>"; };
+		C9BBEC051D470969007D6464 /* NSObject+SQLStateMent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+SQLStateMent.h"; sourceTree = "<group>"; };
+		C9BBEC061D470969007D6464 /* NSObject+SQLStateMent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+SQLStateMent.m"; sourceTree = "<group>"; };
+		C9BBEC081D47687C007D6464 /* LHPredicate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LHPredicate.h; sourceTree = "<group>"; };
+		C9BBEC091D47687C007D6464 /* LHPredicate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LHPredicate.m; sourceTree = "<group>"; };
 		C9DD11231D3B709100B64C66 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		C9DD11251D3C8FEC00B64C66 /* NSDictionary+LHDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+LHDictionary.h"; sourceTree = "<group>"; };
 		C9DD11261D3C8FEC00B64C66 /* NSDictionary+LHDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+LHDictionary.m"; sourceTree = "<group>"; };
+		C9E24D761D52761A0018DA5F /* LHArray.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LHArray.c; sourceTree = "<group>"; };
+		C9E24D771D52761A0018DA5F /* LHArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LHArray.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -131,6 +146,8 @@
 				C92476281D36257700BABA53 /* AppDelegate.m */,
 				C924762A1D36257700BABA53 /* ViewController.h */,
 				C924762B1D36257700BABA53 /* ViewController.m */,
+				C91C26AC1D4FC6DF0073D055 /* Teacher.h */,
+				C91C26AD1D4FC6DF0073D055 /* Teacher.m */,
 				C924762D1D36257700BABA53 /* Main.storyboard */,
 				C92476301D36257700BABA53 /* Assets.xcassets */,
 				C92476321D36257700BABA53 /* LaunchScreen.storyboard */,
@@ -183,8 +200,16 @@
 			children = (
 				C95B491F1D38C4950025C6EB /* LHSqlite.c */,
 				C95B49201D38C4950025C6EB /* LHSqlite.h */,
+				C9BBEC081D47687C007D6464 /* LHPredicate.h */,
+				C9BBEC091D47687C007D6464 /* LHPredicate.m */,
+				C91C26A91D4F31410073D055 /* LHSqliteManager.h */,
+				C91C26AA1D4F31410073D055 /* LHSqliteManager.m */,
+				C9BBEC051D470969007D6464 /* NSObject+SQLStateMent.h */,
+				C9BBEC061D470969007D6464 /* NSObject+SQLStateMent.m */,
 				C9DD11251D3C8FEC00B64C66 /* NSDictionary+LHDictionary.h */,
 				C9DD11261D3C8FEC00B64C66 /* NSDictionary+LHDictionary.m */,
+				C91C26A61D4F30D90073D055 /* NSObject+LHSqlite.h */,
+				C91C26A71D4F30D90073D055 /* NSObject+LHSqlite.m */,
 				C937887F1D4112DE003DE538 /* NSArray+LHArray.h */,
 				C93788801D4112DE003DE538 /* NSArray+LHArray.m */,
 			);
@@ -203,8 +228,8 @@
 		C924765D1D36422100BABA53 /* LHArray */ = {
 			isa = PBXGroup;
 			children = (
-				C924765E1D3643EA00BABA53 /* LHArray.c */,
-				C924765F1D3643EA00BABA53 /* LHArray.h */,
+				C9E24D761D52761A0018DA5F /* LHArray.c */,
+				C9E24D771D52761A0018DA5F /* LHArray.h */,
 			);
 			path = LHArray;
 			sourceTree = "<group>";
@@ -351,14 +376,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				C937888E1D412569003DE538 /* LHObjectInfo.m in Sources */,
+				C91C26AB1D4F31410073D055 /* LHSqliteManager.m in Sources */,
+				C9BBEC0A1D47687C007D6464 /* LHPredicate.m in Sources */,
+				C91C26AE1D4FC6DF0073D055 /* Teacher.m in Sources */,
 				C924762C1D36257700BABA53 /* ViewController.m in Sources */,
 				C924765C1D36420B00BABA53 /* LHDictionary.c in Sources */,
+				C91C26A81D4F30D90073D055 /* NSObject+LHSqlite.m in Sources */,
 				C93788811D4112DE003DE538 /* NSArray+LHArray.m in Sources */,
 				C92476291D36257700BABA53 /* AppDelegate.m in Sources */,
 				C937888F1D412569003DE538 /* NSObject+LHModel.m in Sources */,
-				C92476601D3643EA00BABA53 /* LHArray.c in Sources */,
+				C9BBEC071D470969007D6464 /* NSObject+SQLStateMent.m in Sources */,
 				C9DD11271D3C8FEC00B64C66 /* NSDictionary+LHDictionary.m in Sources */,
 				C92476261D36257700BABA53 /* main.m in Sources */,
+				C9E24D781D52761A0018DA5F /* LHArray.c in Sources */,
 				C95B49211D38C4950025C6EB /* LHSqlite.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

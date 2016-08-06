@@ -11,6 +11,8 @@
 #include "LHArray.h"
 #include "LHDictionary.h"
 #import "NSDictionary+LHDictionary.h"
+#import "NSObject+LHSqlite.h"
+#import "Teacher.h"
 
 @interface ViewController ()
 
@@ -20,50 +22,42 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-//    [self dic];
-    [self sql];
-//    LHSqliteRelease(ref);
-    // Do any additional setup after loading the view, typically from a nib.
+    
+    [self notTransaction];
+    [self transaction];
 }
 
-- (void)dic
-{
-    LHDictionaryRef dic = lh_dictionary_create();
-    char* key = "11";
-    char* value = "lihao";
-    lh_dictionarySetValueForKey(dic, key, value);
-    const void* v = lh_dictionaryGetValueForKey(dic, key);
-    
-}
 
-- (void)sql
+#pragma mark 不开启手动事务
+- (void)notTransaction
 {
-    LHSqliteRef ref = LHSqliteCreateWithFileName([self deocument].UTF8String);
-    LHSqliteError* error0 = NULL;
-    LHSqliteOpen_e(ref, &error0, false);
-    char* sql = "CREATE TABLE IF NOT EXISTS teacher (NAME TEXT,age TEXT)";
-    LHSqliteError* error1 = NULL;
-    sqlite3_stmt* stmt = LHSqlitePrepareSQL(ref, sql, &error1);
-    LHSqliteError* error2 = NULL;
-    LHSqliteStepUpdate(ref, stmt, &error2);
-    
-    char* insert = "INSERT INTO teacher (NAME,age) VALUES (?,?)";
-    sqlite3_stmt* stmt1 = LHSqlitePrepareSQL(ref, insert, &error1);
-    LHSqliteBindWithIndex(stmt1, 1, "lihao", 0, LHSqliteValueTEXT);
-    LHSqliteBindWithIndex(stmt1, 2, "11", 0, LHSqliteValueTEXT);
-    LHSqliteStepUpdate(ref, stmt1, &error2);
-    
-    char* select = "select * from teacher";
-    LHSqliteError* error3 = NULL;
-    sqlite3_stmt* stmt2 = LHSqlitePrepareSQL(ref, select, &error3);
-    
-    LHArrayRef arrayRef = LHSqliteStepQuery(ref, stmt2, &error3);
-    for (int i=0; i<arrayRef->count; i++) {
-        LHDictionaryRef dic = lh_arrayGetValueWithIndex(arrayRef, i);
-        NSDictionary* obdic = [NSDictionary lh_transfromDictionary:dic];
-        NSLog(@"dic = %@",obdic);
+    NSDate* date = [NSDate date];
+    [Teacher lh_openDB];
+    [Teacher lh_createTable];
+    for (int i=0; i<1000; i++) {
+        [Teacher lh_insertWith:@{@"date":[NSDate date],@"name":@"lihao",@"age":@18,@"data":[@"lihao" dataUsingEncoding:NSUTF8StringEncoding],@"array":@[@"123",@"213",@"321"]}];
     }
-    LHSqliteClose(ref, false);
+    [Teacher lh_closeDB];
+    NSTimeInterval t = [[NSDate date] timeIntervalSinceDate:date];
+    NSLog(@"notTransaction ===== %f",t);
+}
+
+
+#pragma mark 开始手动事务
+- (void)transaction
+{
+    NSDate* date = [NSDate date];
+    [Teacher lh_openDB];
+    [Teacher lh_createTable];
+    [Teacher lh_beginTransaction];
+    for (int i=0; i<1000; i++) {
+        [Teacher lh_insertWith:@{@"date":[NSDate date],@"name":@"lihao",@"age":@18,@"data":[@"lihao" dataUsingEncoding:NSUTF8StringEncoding],@"array":@[@"123",@"213",@"321"]}];
+    }
+    [Teacher lh_commit];
+    [Teacher lh_closeDB];
+    NSTimeInterval t = [[NSDate date] timeIntervalSinceDate:date];
+    NSLog(@"Transaction ==== %f",t);
+
 }
 
 - (NSString*)deocument

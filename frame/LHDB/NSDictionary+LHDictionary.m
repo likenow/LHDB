@@ -12,6 +12,12 @@
 
 @implementation NSDictionary (LHDictionary)
 
+static inline void lh_sqliteDictionaryRelease(const void* value)
+{
+    LHSqliteValue* sqliteValue = (LHSqliteValue*)value;
+    LHSqliteValueRelease(sqliteValue);
+}
+
 void stringFromDate(NSDate* date,NSDateFormatter* matter,NSString** dateString)
 {
     if (date == nil || dateString == nil) {
@@ -44,14 +50,16 @@ static inline void lh_dictionaryApplierFunction(const void* key,const void* valu
             
         case LHSqliteValueINTEGER:
         {
-            int i = *(int*)(sqlite_type->value);
+            LHSqliteIntValue* int_value = (LHSqliteIntValue*)sqlite_type->value;
+            int i = int_value->int_value;
             dic_value = [NSNumber numberWithInt:i];
         }
             break;
             
         case LHSqliteValueFLOAT:
         {
-            float f = *(float*)sqlite_type->value;
+            LHSqliteFloatValue* float_value = (LHSqliteFloatValue*)sqlite_type->value;
+            float f = float_value->float_value;
             dic_value = [NSNumber numberWithFloat:f];
         }
             break;
@@ -80,18 +88,21 @@ static inline LHSqliteValue* lh_transfromSqliteValue(NSObject* object)
     if ([object isKindOfClass:[NSString class]]) {
         char* c = (char*)((NSString*)object).UTF8String;
         sqliteValue->vale_type = LHSqliteValueTEXT;
-        sqliteValue->value = c;
+        sqliteValue->value = strdup(c);
     }else if ([object isKindOfClass:[NSArray class]] || [object isKindOfClass:[NSDictionary class]]){
         if ([NSJSONSerialization isValidJSONObject:object]) {
             NSData* data = [NSJSONSerialization dataWithJSONObject:object options:NSJSONWritingPrettyPrinted error:nil];
-            if (data) {
-                LHSqliteBlobValue* blobValue = malloc(sizeof(LHSqliteBlobValue));
-                if (blobValue) {
-                    blobValue->blob_lenght = (int)data.length;
-                    blobValue->blob = data.bytes;
-                    sqliteValue->vale_type = LHSqliteValueBLOB;
-                    sqliteValue->value = blobValue;
-                }
+            NSString* dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            if (dataStr) {
+                sqliteValue->vale_type = LHSqliteValueTEXT;
+                sqliteValue->value = strdup(dataStr.UTF8String);
+//                LHSqliteBlobValue* blobValue = malloc(sizeof(LHSqliteBlobValue));
+//                if (blobValue) {
+//                    blobValue->blob_lenght = (int)data.length;
+//                    blobValue->blob = data.bytes;
+//                    sqliteValue->vale_type = LHSqliteValueBLOB;
+//                    sqliteValue->value = blobValue;
+//                }
             }
         }
     }else if ([object isKindOfClass:[NSData class]]) {
@@ -116,19 +127,23 @@ static inline LHSqliteValue* lh_transfromSqliteValue(NSObject* object)
         NSNumber* number = (NSNumber*)object;
         if (strcmp([number objCType], @encode(float)) == 0 || strcmp([number objCType], @encode(double)) == 0) {
             sqliteValue->vale_type = LHSqliteValueFLOAT;
+            LHSqliteFloatValue* float_value = malloc(sizeof(LHSqliteFloatValue));
             float f = [number floatValue];
-            sqliteValue->value = &f;
+            float_value->float_value = f;
+            sqliteValue->value = float_value;
         }else {
             sqliteValue->vale_type = LHSqliteValueINTEGER;
+            LHSqliteIntValue* int_value = malloc(sizeof(LHSqliteIntValue));
             int i = [number intValue];
-            sqliteValue->value = &i;
+            int_value->int_value = i;
+            sqliteValue->value = int_value;
         }
     }else if ([object isKindOfClass:[NSDate class]]) {
         NSDate* date = (NSDate*)object;
         NSString* dateString = nil;
         stringFromDate(date,nil,&dateString);
         sqliteValue->vale_type = LHSqliteValueTEXT;
-        sqliteValue->value = dateString.UTF8String;
+        sqliteValue->value = strdup(dateString.UTF8String);
     }
     return sqliteValue;
 }
@@ -146,8 +161,13 @@ static inline LHSqliteValue* lh_transfromSqliteValue(NSObject* object)
 
 - (LHDictionaryRef)lh_transfromLHDictionary
 {
-    NSInteger count = lh_realCapacityWithCount(self.count);
-    LHDictionaryRef dicRef = lh_dictionary_create_with_options((uint)count, &lh_default_key_callback, NULL);
+    NSInteger count = (NSInteger)lh_realCapacityWithCount((UInt64)self.count);
+    map_value_callback value_callback = {
+        NULL,
+        lh_sqliteDictionaryRelease,
+        NULL
+    };
+    LHDictionaryRef dicRef = lh_dictionary_create_with_options((uint)count, &lh_default_key_callback, &value_callback);
     if (dicRef == NULL) {
         return NULL;
     }
@@ -156,16 +176,20 @@ static inline LHSqliteValue* lh_transfromSqliteValue(NSObject* object)
         if (![key isKindOfClass:[NSString class]]) {
             return ;
         }
+        char* dic_key = (char*)((NSString*)key).UTF8String;
         LHSqliteValue* dic_value = lh_transfromSqliteValue(obj);
         if (dic_value) {
+
             if (dic_value->value == NULL) {
                 LHSqliteValueRelease(dic_value);
                 return;
             }
-            char* dic_key = (char*)((NSString*)key).UTF8String;
+
             lh_dictionarySetValueForKey(dicRef, dic_key, dic_value);
         }
     }];
+    
+    
     //字典长度为0时,释放内存
     if (lh_dictionaryGetCount(dicRef) == 0) {
         lh_dictionaryRelease(dicRef);

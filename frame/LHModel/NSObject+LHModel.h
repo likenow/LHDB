@@ -18,8 +18,8 @@
 
 - (NSData*)lh_ModelToData;
 
-+ (NSDictionary*)getAllPropertyNameAndType;
++ (NSDictionary*)lh_propertyInfo;
 
-+ (NSString*)getTypeNameWith:(NSString*)propertyName;
++ (NSString*)lh_propertyType:(NSString*)name;
 
 @end

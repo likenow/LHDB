@@ -277,24 +277,28 @@ typedef struct {
     return [NSJSONSerialization dataWithJSONObject:[self lh_ModelToDictionary] options:NSJSONWritingPrettyPrinted error:nil];;
 }
 
-+ (NSDictionary*)getAllPropertyNameAndType
++ (NSDictionary*)lh_propertyInfo
 {
-    NSMutableDictionary* dic = [NSMutableDictionary dictionary];
-    unsigned int count = 0;
-    objc_property_t* property_t = class_copyPropertyList(self, &count);
-    for (int i=0; i<count; i++) {
-        objc_property_t propert = property_t[i];
-        NSString* propertyName = [NSString stringWithUTF8String:property_getName(propert)];
-        NSString* propertyType = [NSString stringWithUTF8String:property_getAttributes(propert)];
-        [dic setValue:objectType(propertyType) forKey:propertyName];
-    }
-    free(property_t);
+    static NSMutableDictionary* dic = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        dic = [NSMutableDictionary dictionary];
+        unsigned int count = 0;
+        objc_property_t* property_t = class_copyPropertyList(self, &count);
+        for (int i=0; i<count; i++) {
+            objc_property_t propert = property_t[i];
+            NSString* propertyName = [NSString stringWithUTF8String:property_getName(propert)];
+            NSString* propertyType = [NSString stringWithUTF8String:property_getAttributes(propert)];
+            [dic setValue:objectType(propertyType) forKey:propertyName];
+        }
+        free(property_t);
+    });
     return dic;
 }
 
-+ (NSString*)getTypeNameWith:(NSString*)propertyName
++ (NSString*)lh_propertyType:(NSString*)name
 {
-    NSString* typeStr = [[self getAllPropertyNameAndType]valueForKey:propertyName];
+    NSString* typeStr = [[self lh_propertyInfo]valueForKey:name];
     if ([typeStr isEqualToString:@"i"]) {
         return @"INT";
     }else if ([typeStr isEqualToString:@"f"]) {
@@ -374,7 +378,8 @@ static NSArray* arrayFromObject(id object)
     }else if ([object isKindOfClass:[NSDictionary class]]){
         return nil;
     }else {
-        id value = [NSJSONSerialization JSONObjectWithData:dataFromObject(object) options:NSJSONReadingMutableContainers error:nil];
+        NSError* error ;
+        id value = [NSJSONSerialization JSONObjectWithData:dataFromObject(object) options:NSJSONReadingMutableContainers error:&error];
         if ([value isKindOfClass:[NSArray class]]) {
             return value;
         }

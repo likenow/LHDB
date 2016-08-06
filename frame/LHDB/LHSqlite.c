@@ -7,7 +7,6 @@
 //
 
 #include "LHSqlite.h"
-#include <libkern/OSAtomic.h>
 #include <stdlib.h>
 #include <string.h>
 #include "LHDictionary.h"
@@ -21,13 +20,7 @@
 
 void LHSqliteBlobValueRelease(LHSqliteBlobValue* blob_value);
 
-struct lh_sqlite {
-    sqlite3* _db;
-    const char* fileName;
-    OSSpinLock _lock;
-    LHDictionaryRef _cacheStmt;
-    LHSqliteCallBacks callback;
-};
+
 
 __STATIC__INLINE void lh_sqliteStmtCacheApplierFunction(const void *key, const void *value, void *context)
 {
@@ -38,81 +31,100 @@ __STATIC__INLINE void lh_sqliteStmtCacheApplierFunction(const void *key, const v
     }
 }
 
-__STATIC__INLINE __LHBOOL lh_sqlite_string_equal(const void* value1,const void* value2)
+__STATIC__INLINE void lh_sqliteUpdateApplierFunction(const void* key,const void* value,void* context)
 {
-    return strcmp(value1, value2) == 0;
+    LHSqliteValue* sqliteValue = (LHSqliteValue*)value;
+    sqlite3_stmt* stmt = (sqlite3_stmt*)context;
+    int length = (int)strlen(key);
+    char* c = calloc(length+2, sizeof(char));
+    strcat(c, ":");
+    strcat(c, key);
+    LHSqliteBindWithName(stmt, c, sqliteValue);
+    
 }
-
-LHSqliteCallBacks kLHSqliteDefaultStringCallBacks = {
-    (LHSqliteRetainCallBack)strdup,
-    (LHSqliteReleaseCallBack)free,
-    lh_sqlite_string_equal
-};
 
 __STATIC__INLINE sqlite3_stmt* __LHSqlitePrepareSql(LHSqliteRef sqliteRef,const char* zSql,LHSqliteError** error)
 {
-    if (zSql == NULL || strlen(zSql) == 0 || sqliteRef == NULL) {
+    if (zSql == NULL || strlen(zSql) == 0 || sqliteRef == NULL || sqliteRef->_isConnection == false) {
         return NULL;
     }
-    sqlite3_stmt* stmt = NULL;
-    if (sqlite3_prepare_v2(sqliteRef->_db, zSql, -1, &stmt, NULL) == SQLITE_OK) {
-        return stmt;
-    }else {
-        if (error) {
-            *error = malloc(sizeof(LHSqliteError));
-            if (*error == NULL) {
-                return NULL;
+    sqlite3_stmt* stmt = lh_dictionaryGetValueForKey(sqliteRef->_cacheStmt, zSql);
+    if (stmt == NULL) {
+        if (sqlite3_prepare_v2(sqliteRef->_db, zSql, -1, &stmt, NULL) == SQLITE_OK) {
+            lh_dictionarySetValueForKey(sqliteRef->_cacheStmt, zSql, stmt);
+            return stmt;
+        }else {
+            if (error) {
+                *error = malloc(sizeof(LHSqliteError));
+                if (*error == NULL) {
+                    return NULL;
+                }
+                (*error)->error_code = sqlite3_errcode(sqliteRef->_db);
+                (*error)->error_msg = strdup(sqlite3_errmsg(sqliteRef->_db));
             }
-            (*error)->error_code = sqlite3_errcode(sqliteRef->_db);
-            (*error)->error_msg = sqliteRef->callback.retain(sqlite3_errmsg(sqliteRef->_db));
         }
-    }
-    return NULL;
+    }else
+        sqlite3_reset(stmt);
+    return stmt;
 }
 
-__STATIC__INLINE void __LHSqliteBindWithValue(sqlite3_stmt* stmt,int idx,char* name,const void* value,int blob_length,LHSqliteValueType bindType)
+__STATIC__INLINE void __LHSqliteBindWithValue(sqlite3_stmt* stmt,int idx,char* name,LHSqliteValue* value)
 {
     if (name) {
-        switch (bindType) {
+        switch (value->vale_type) {
             case LHSqliteValueINTEGER:
-                sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, name), *(int*)value);
+            {
+                LHSqliteIntValue* int_value = (LHSqliteIntValue*)value->value;
+                sqlite3_bind_int(stmt, (int)sqlite3_bind_parameter_index(stmt, name), int_value->int_value);
+            }
                 break;
                 
             case LHSqliteValueFLOAT:
-                sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, name), *(float*)value);
+            {
+                LHSqliteFloatValue* float_value = (LHSqliteFloatValue*)value->value;
+                sqlite3_bind_double(stmt, (int)sqlite3_bind_parameter_index(stmt, name), float_value->float_value);
+            }
                 break;
                 
             case LHSqliteValueTEXT:
-                sqlite3_bind_text(stmt, sqlite3_bind_parameter_index(stmt, name), value, -1, NULL);
+            {
+                sqlite3_bind_text(stmt, (int)sqlite3_bind_parameter_index(stmt, name), value->value, -1, NULL);
+            }
                 break;
                 
             case LHSqliteValueBLOB:
-                sqlite3_bind_blob(stmt, sqlite3_bind_parameter_index(stmt, name), value, blob_length, NULL);
+            {
+                LHSqliteBlobValue* blobValue = (LHSqliteBlobValue*)value->value;
+                sqlite3_bind_blob(stmt, (int)sqlite3_bind_parameter_index(stmt, name), blobValue->blob, blobValue->blob_lenght, NULL);
+            }
                 break;
                 
             default:
                 break;
         }
+        free(name);
     }else {
-        switch (bindType) {
+        switch (value->vale_type) {
             case LHSqliteValueINTEGER:
-                sqlite3_bind_int(stmt, idx, *(int*)value);
+                sqlite3_bind_int(stmt, idx, *(int*)value->value);
                 break;
                 
             case LHSqliteValueFLOAT:
-                sqlite3_bind_double(stmt, idx, *(float*)value);
+                sqlite3_bind_double(stmt, idx, *(float*)value->value);
                 break;
                 
             case LHSqliteValueTEXT:
             {
-                char* c = (char*)value;
-                sqlite3_bind_text(stmt, idx, (char*)value, -1, NULL);
+                sqlite3_bind_text(stmt, idx,value->value, -1, NULL);
             }
                 
                 break;
                 
             case LHSqliteValueBLOB:
-                sqlite3_bind_blob(stmt, idx, value, blob_length, NULL);
+            {
+                LHSqliteBlobValue* blobValue = (LHSqliteBlobValue*)value->value;
+                sqlite3_bind_blob(stmt, sqlite3_bind_parameter_index(stmt, name), blobValue->blob, blobValue->blob_lenght, NULL);
+            }
                 break;
                 
             default:
@@ -123,7 +135,7 @@ __STATIC__INLINE void __LHSqliteBindWithValue(sqlite3_stmt* stmt,int idx,char* n
 }
 __STATIC__INLINE void __LHSqliteStepUpdate(LHSqliteRef sqliteRef,sqlite3_stmt* stmt,LHSqliteError** error)
 {
-    if (sqliteRef == NULL) {
+    if (sqliteRef == NULL || sqliteRef->_isConnection == false) {
         return;
     }
     int result = sqlite3_step(stmt);
@@ -134,7 +146,7 @@ __STATIC__INLINE void __LHSqliteStepUpdate(LHSqliteRef sqliteRef,sqlite3_stmt* s
                 return;
             }
             (*error)->error_code = sqlite3_errcode(sqliteRef->_db);
-            (*error)->error_msg = sqliteRef->callback.retain(sqlite3_errmsg(sqliteRef->_db));
+            (*error)->error_msg = strdup(sqlite3_errmsg(sqliteRef->_db));
         }
     }
 }
@@ -150,7 +162,9 @@ __STATIC__INLINE LHSqliteValue* __LHSqliteValueWith(sqlite3_stmt* stmt,int value
         {
             value->vale_type = LHSqliteValueINTEGER;
             int i = sqlite3_column_int(stmt, idx);
-            value->value = &i;
+            LHSqliteIntValue* int_value = malloc(sizeof(LHSqliteIntValue));
+            int_value->int_value = i;
+            value->value = int_value;
         }
             break;
             
@@ -158,7 +172,9 @@ __STATIC__INLINE LHSqliteValue* __LHSqliteValueWith(sqlite3_stmt* stmt,int value
         {
             value->vale_type = LHSqliteValueFLOAT;
             float f = sqlite3_column_double(stmt, idx);
-            value->value = &f;
+            LHSqliteFloatValue* float_value = malloc(sizeof(LHSqliteFloatValue));
+            float_value->float_value = f;
+            value->value = float_value;
         }
             break;
             
@@ -174,9 +190,6 @@ __STATIC__INLINE LHSqliteValue* __LHSqliteValueWith(sqlite3_stmt* stmt,int value
             value->vale_type = LHSqliteValueBLOB;
             LHSqliteBlobValue* blob_value = malloc(sizeof(LHSqliteBlobValue));
             blob_value->blob_lenght = sqlite3_column_bytes(stmt, idx);
-//            void* blob = malloc(blob_value->blob_lenght*sizeof(int));
-//            memmove(blob, sqlite3_column_blob(stmt, idx), blob_value->blob_lenght);
-//            blob_value->blob = blob;
             blob_value->blob = sqlite3_column_blob(stmt, idx);
             value->value = blob_value;
         }
@@ -194,10 +207,10 @@ __STATIC__INLINE LHSqliteValue* __LHSqliteValueWith(sqlite3_stmt* stmt,int value
 
 __STATIC__INLINE LHArrayRef __LHSqliteStepQuery(LHSqliteRef sqliteRef,sqlite3_stmt* stmt,LHSqliteError** error)
 {
-    if (sqliteRef == NULL || stmt == NULL) {
+    if (sqliteRef == NULL || stmt == NULL || sqliteRef->_isConnection == false) {
         return NULL;
     }
-    LHArrayRef arrR = lh_arrayCreate();
+    LHArrayRef arrR = LHArrayCreate();
     int query_count = sqlite3_column_count(stmt);
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         LHDictionaryRef dicR = lh_dictionary_create();
@@ -205,10 +218,10 @@ __STATIC__INLINE LHArrayRef __LHSqliteStepQuery(LHSqliteRef sqliteRef,sqlite3_st
             lh_dictionarySetValueForKey(dicR, sqlite3_column_name(stmt, i), __LHSqliteValueWith(stmt, sqlite3_column_type(stmt, i), i));
             
         }
-        lh_arrayAppentValue(arrR, dicR);
+        LHArrayAppentValue(arrR, dicR);
     }
-    if (lh_arrayGetCount(arrR) == 0) {
-        lh_arrayRelease(arrR);
+    if (LHArrayGetCount(arrR) == 0) {
+        LHArrayRelease(arrR);
         arrR = NULL;
     }
     
@@ -216,17 +229,17 @@ __STATIC__INLINE LHArrayRef __LHSqliteStepQuery(LHSqliteRef sqliteRef,sqlite3_st
     
 }
 
-__STATIC__INLINE LHSqliteRef __LHSqliteCreateWithOptions(const void* fileName,LHSqliteCallBacks* callback)
+__STATIC__INLINE LHSqliteRef __LHSqliteCreateWithOptions(const void* fileName)
 {
     if (!fileName) {
         return NULL;
     }
-    LHSqliteRef sqlite = calloc(1, sizeof(LHSqliteRef));
+    LHSqliteRef sqlite = calloc(1, sizeof(struct lh_sqlite));
     if (sqlite == NULL) {
         return NULL;
     }
-    callback ? (sqlite->callback = *callback) : (sqlite->callback = kLHSqliteDefaultStringCallBacks);
-    sqlite->fileName = sqlite->callback.retain(fileName);
+    sqlite->_isConnection = false;
+    sqlite->fileName = strdup(fileName);
     sqlite->_lock = OS_SPINLOCK_INIT;
     sqlite->_cacheStmt = lh_dictionary_create_with_options(100, &lh_default_key_callback, NULL);
     return sqlite;
@@ -238,7 +251,9 @@ __STATIC__INLINE __LHBOOL __LHSqliteOpen(LHSqliteRef sqliteRef,__LHBOOL onLock)
         return false;
     }
     __LOCK;
-    if (sqlite3_open(sqliteRef->fileName, &sqliteRef->_db) == SQLITE_OK) {
+    int run_result = sqlite3_open(sqliteRef->fileName, &sqliteRef->_db);
+    if (run_result == SQLITE_OK) {
+        sqliteRef->_isConnection = true;
         return true;
     }
     sqlite3_close(sqliteRef->_db);
@@ -253,6 +268,7 @@ __STATIC__INLINE __LHBOOL __LHSqliteOpen_e(LHSqliteRef sqliteRef,LHSqliteError**
     }
     __LOCK;
     if (sqlite3_open(sqliteRef->fileName, &sqliteRef->_db) == SQLITE_OK) {
+        sqliteRef->_isConnection = true;
         return true;
     }
     if (error) {
@@ -263,7 +279,7 @@ __STATIC__INLINE __LHBOOL __LHSqliteOpen_e(LHSqliteRef sqliteRef,LHSqliteError**
             return false;
         }
         (*error)->error_code = sqlite3_errcode(sqliteRef->_db);
-        (*error)->error_msg = sqliteRef->callback.retain(sqlite3_errmsg(sqliteRef->_db));
+        (*error)->error_msg = strdup(sqlite3_errmsg(sqliteRef->_db));
     }
     sqlite3_close(sqliteRef->_db);
     __UNLOCK;
@@ -275,20 +291,31 @@ __STATIC__INLINE __LHBOOL __LHSqliteClose(LHSqliteRef sqliteRef,__LHBOOL onLock)
     if (sqliteRef == NULL) {
         return false;
     }
-    if (sqlite3_close(sqliteRef->_db) == SQLITE_BUSY || sqlite3_close(sqliteRef->_db) == SQLITE_LOCKED) {
-        usleep(20);
-        if (sqlite3_close(sqliteRef->_db) != SQLITE_OK) {
+    LHSqliteClearStmtCache(sqliteRef);
+    bool retry = false;
+    int result = 0;
+    int sqliteCloseTimeout = 3;
+    bool triedFinalizingOpenStatements = false;
+    do {
+        retry = false;
+        result = sqlite3_close(sqliteRef->_db);
+        if (result == SQLITE_BUSY || result == SQLITE_LOCKED) {
+            retry = true;
+            usleep(20);
+            sqliteCloseTimeout --;
+            if (!triedFinalizingOpenStatements) {
+                triedFinalizingOpenStatements = true;
+                sqlite3_stmt *pStmt;
+                while ((pStmt = sqlite3_next_stmt(sqliteRef->_db, NULL)) !=0) {
+                    sqlite3_finalize(pStmt);
+                }
+            }
+        }else if (result != SQLITE_OK){
             __UNLOCK;
             return false;
         }
-        __UNLOCK;
-        return true;
-    }
-    
-    if (sqlite3_close(sqliteRef->_db) != SQLITE_OK) {
-        __UNLOCK;
-        return false;
-    }
+    } while (retry&&sqliteCloseTimeout);
+    sqliteRef->_isConnection = false;
     __UNLOCK;
     return true;
 }
@@ -297,12 +324,7 @@ __STATIC__INLINE __LHBOOL __LHSqliteClose(LHSqliteRef sqliteRef,__LHBOOL onLock)
 
 LHSqliteRef LHSqliteCreateWithFileName(const void* fileName)
 {
-    return __LHSqliteCreateWithOptions(fileName, NULL);
-}
-
-LHSqliteRef LHSqliteCreateWithOptions(const void* fileName,LHSqliteCallBacks* callback)
-{
-    return __LHSqliteCreateWithOptions(fileName, callback);
+    return __LHSqliteCreateWithOptions(fileName);
 }
 
 __LHBOOL LHSqliteOpen(LHSqliteRef sqliteRef,__LHBOOL onLock)
@@ -320,14 +342,14 @@ sqlite3_stmt* LHSqlitePrepareSQL(LHSqliteRef sqliteRef,const char* zSql,LHSqlite
     return __LHSqlitePrepareSql(sqliteRef, zSql, error);
 }
 
-void LHSqliteBindWithNmae(sqlite3_stmt* stmt,char* name,const void* value,int blob_length,LHSqliteValueType bindType)
+void LHSqliteBindWithName(sqlite3_stmt* stmt,char* name,LHSqliteValue* value)
 {
-    __LHSqliteBindWithValue(stmt,0, name, value, blob_length, bindType);
+    __LHSqliteBindWithValue(stmt,0, name, value);
 }
 
-void LHSqliteBindWithIndex(sqlite3_stmt* stmt,int idx,const void* value,int blob_length,LHSqliteValueType bindType)
+void LHSqliteBindWithIndex(sqlite3_stmt* stmt,int idx,LHSqliteValue* value)
 {
-    __LHSqliteBindWithValue(stmt, idx, NULL, value, blob_length, bindType);
+    __LHSqliteBindWithValue(stmt, idx, NULL,value);
 }
 
 void LHSqliteStepUpdate(LHSqliteRef sqliteRef,sqlite3_stmt* stmt,LHSqliteError** error)
@@ -338,6 +360,33 @@ void LHSqliteStepUpdate(LHSqliteRef sqliteRef,sqlite3_stmt* stmt,LHSqliteError**
 LHArrayRef LHSqliteStepQuery(LHSqliteRef sqliteRef,sqlite3_stmt* stmt,LHSqliteError** error)
 {
     return __LHSqliteStepQuery(sqliteRef, stmt, error);
+}
+
+void LHSqliteExecuteUpdate(LHSqliteRef sqliteRef,const char* zSql,LHDictionaryRef dictionary,LHSqliteError** error)
+{
+    
+    sqlite3_stmt* stmt = LHSqlitePrepareSQL(sqliteRef, zSql, error);
+    if (stmt == NULL) {
+        return;
+    }
+    
+    if (*error != NULL) {
+        return;
+    }
+    
+    lh_dictionaryApplyFunction(dictionary, lh_sqliteUpdateApplierFunction, stmt);
+    LHSqliteStepUpdate(sqliteRef, stmt, error);
+    lh_dictionaryRelease(dictionary);
+}
+
+LHArrayRef LHSqliteExecuteQuery(LHSqliteRef sqliteRef,const char* zSql,LHSqliteError** error)
+{
+    sqlite3_stmt* stmt = LHSqlitePrepareSQL(sqliteRef, zSql, error);
+    if (stmt == NULL || *error != NULL) {
+        return NULL;
+    }
+    
+    return LHSqliteStepQuery(sqliteRef, stmt, error);
 }
 
 __LHBOOL LHSqliteClose(LHSqliteRef sqliteRef,__LHBOOL onLock)
@@ -366,9 +415,9 @@ void LHSqliteErrorFree(LHSqliteRef sqliteRef,LHSqliteError* sql_error)
     }
     if (sql_error) {
         if (sql_error->error_msg) {
-            !(sqliteRef->callback.release) ? free((void*)sql_error->error_msg):(sqliteRef->callback.release)(sql_error->error_msg);
+            free((void*)sql_error->error_msg);
         }
-        !(sqliteRef->callback.release) ? free(sql_error):(sqliteRef->callback.release)(sql_error);
+        free(sql_error);
     }
     sql_error = NULL;
 }
@@ -379,17 +428,24 @@ void LHSqliteValueRelease(LHSqliteValue* value)
         switch (value->vale_type) {
             case LHSqliteValueBLOB:
                 LHSqliteBlobValueRelease((LHSqliteBlobValue*)(value->value));
-                free(value);
                 break;
                 
             case LHSqliteValueTEXT:
                 free((void*)value->value);
-                free(value);
+                value->value = NULL;
+                break;
+            case LHSqliteValueFLOAT:
+                free((void*)value->value);
+                value->value = NULL;
+                break;
+            case LHSqliteValueINTEGER:
+                free((void*)value->value);
+                value->value = NULL;
                 break;
             default:
-                free(value);
                 break;
         }
+        free(value);
     }
     value = NULL;
 }
@@ -409,9 +465,8 @@ void LHSqliteRelease(LHSqliteRef sqliteRef)
     }
     LHSqliteClearStmtCache(sqliteRef);
     lh_dictionaryRelease(sqliteRef->_cacheStmt);
-    if (sqliteRef->callback.release) sqliteRef->callback.release(sqliteRef->fileName);
+    free((void*)sqliteRef->fileName);
     sqliteRef->fileName = NULL;
-    
     free(sqliteRef);
     sqliteRef = NULL;
 }

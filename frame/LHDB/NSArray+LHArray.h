@@ -15,6 +15,6 @@
 
 - (LHArrayRef)lh_transfromLHArray;
 
-- (NSArray*)lh_transfromModel;
+- (NSArray*)lh_transfromModelWithClass:(Class)cls;
 
 @end

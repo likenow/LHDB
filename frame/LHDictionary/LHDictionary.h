@@ -14,6 +14,10 @@
 
 typedef void (*LHDictionaryApplierFunction)(const void *key, const void *value, void *context);
 
+typedef void (*LHDictionaryApplierFuntionWithParamters)(const void* key,const void* value,void* context1,void* context2);
+
+typedef void (*LHDictionaryApplierFuntionWithIndex)(const void* key,const void* value,void* context,int index);
+
 typedef void *(*map_retain_callback)(const void* value);
 
 typedef void (*map_release_callback)(const void* value);
@@ -34,6 +38,29 @@ typedef struct _lh_map_value_callback {
     map_release_callback release;
     map_equal_callback equal;
 }map_value_callback;
+
+struct _lh_map_node {
+    void* key;
+    const void* value;
+    struct _lh_map_node* next;
+};
+
+typedef struct _lh_map_bucket _lh_map_bucket_t;
+
+struct _lh_map_bucket {
+    u_int count;
+    struct _lh_map_node* first;
+    struct _lh_map_node* tail;
+};
+
+struct _lh_map_t {
+    u_long count;
+    u_long bucket_count;
+    u_long resize_count;
+    _lh_map_bucket_t** buckets;
+    map_key_callback key_callback;
+    map_value_callback value_callback;
+};
 
 typedef struct _lh_map_t* LHDictionaryRef;
 
@@ -105,6 +132,10 @@ void lh_dictionaryRemoveAllValues(LHDictionaryRef dictionary);
  @param context 函数指针可以传的参数 可以为空
  */
 void lh_dictionaryApplyFunction(LHDictionaryRef dictionary,LHDictionaryApplierFunction applier,void* context);
+
+void lh_dictionaryApplyFunctionWithMultipleParamete(LHDictionaryRef dictionary,LHDictionaryApplierFuntionWithParamters applier,void* context1,void* context2);
+
+void lh_dictionaryApplyFunctionWithIndex(LHDictionaryRef dictionary,LHDictionaryApplierFuntionWithIndex applier,void* context);
 
 /**
  @dis 释放字典占用的内存  释放后不可继续使用该字典 否则会造成不可预估的错误

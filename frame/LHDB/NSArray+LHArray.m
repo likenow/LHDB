@@ -13,7 +13,7 @@
 
 @implementation NSArray (LHArray)
 
-static inline void lh_arrayAppleFunction(const void* value,void* context)
+static inline void lh_arrayAppleFunction(lh_uint index,const void* value,const void* context)
 {
     NSMutableArray* array = (__bridge NSMutableArray *)(context);
     if (value) {
@@ -28,13 +28,14 @@ static inline void lh_arrayAppleFunction(const void* value,void* context)
 
 + (NSMutableArray*)lh_transfromNSArray:(LHArrayRef)array
 {
-    if (array == NULL || lh_arrayGetCount(array) == 0) {
+    if (array == NULL || LHArrayGetCount(array) == 0) {
         return nil;
     }
     
-    NSMutableArray* transfromArray = [NSMutableArray arrayWithCapacity:lh_arrayGetCount(array)];
+    NSMutableArray* transfromArray = [NSMutableArray arrayWithCapacity:LHArrayGetCount(array)];
     
-    lh_arrayApplyFunction(array, lh_arrayAppleFunction,(__bridge void *)(transfromArray));
+    LHArrayApplyFunction(array, lh_arrayAppleFunction,(__bridge void *)(transfromArray));
+    LHArrayRelease(array);
     return transfromArray;
 }
 
@@ -43,7 +44,7 @@ static inline void lh_arrayAppleFunction(const void* value,void* context)
     if (self == nil || self.count == 0) {
         return NULL;
     }
-    LHArrayRef array = lh_arrayCreate();
+    LHArrayRef array = LHArrayCreate();
     if (array == NULL) {
         return NULL;
     }
@@ -52,18 +53,19 @@ static inline void lh_arrayAppleFunction(const void* value,void* context)
             NSDictionary* dic = (NSDictionary*)obj;
             LHDictionaryRef transfromDic = [dic lh_transfromLHDictionary];
             if (transfromDic) {
-                lh_arrayAppentValue(array, transfromDic);
+                LHArrayAppentValue(array, transfromDic);
             }
         }
     }];
-    if (lh_arrayGetCount(array) == 0) {
-        lh_arrayRelease(array);
+    if (LHArrayGetCount(array) == 0) {
+        LHArrayRelease(array);
     }
+    
     return array;
 }
 
 //数组中的元素需要是NSDictionary
-- (NSArray*)lh_transfromModel
+- (NSArray*)lh_transfromModelWithClass:(Class)cls;
 {
     if (self == nil || self.count == 0) {
         return nil;
@@ -71,7 +73,7 @@ static inline void lh_arrayAppleFunction(const void* value,void* context)
     NSMutableArray* transfromArray = [NSMutableArray arrayWithCapacity:self.count];
     [self enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if ([obj isKindOfClass:[NSDictionary class]]) {
-            NSObject* object = [obj lh_ModelToDictionary];
+            NSObject* object = [cls lh_ModelWithDictionary:obj];
             if (object) {
                 [transfromArray addObject:object];
             }

@@ -9,34 +9,11 @@
 #include "LHDictionary.h"
 #include <string.h>
 #include <stdlib.h>
+#include "LHSqlite.h"
 
 #define __STATIC__INLINE static inline
 
-static int maxNodeLength = 9;
 static const float _lh_map_resize_factor = 0.75;
-
-struct _lh_map_node {
-    void* key;
-    const void* value;
-    struct _lh_map_node* next;
-};
-
-typedef struct _lh_map_bucket _lh_map_bucket_t;
-
-struct _lh_map_bucket {
-    u_int count;
-    struct _lh_map_node* first;
-    struct _lh_map_node* tail;
-};
-
-struct _lh_map_t {
-    u_long count;
-    u_long bucket_count;
-    u_long resize_count;
-    _lh_map_bucket_t** buckets;
-    map_key_callback key_callback;
-    map_value_callback value_callback;
-};
 
 __STATIC__INLINE bool map_default_equal_callback(const void* key1,const void* key2)
 {
@@ -475,7 +452,7 @@ void lh_dictionaryRemoveAllValues(LHDictionaryRef dictionary)
 
 void lh_dictionaryApplyFunction(LHDictionaryRef dictionary,LHDictionaryApplierFunction applier,void* context)
 {
-    if (dictionary == NULL && applier == NULL) {
+    if (dictionary == NULL || applier == NULL) {
         return;
     }
     for (int i=0; i<dictionary->bucket_count; i++) {
@@ -490,8 +467,47 @@ void lh_dictionaryApplyFunction(LHDictionaryRef dictionary,LHDictionaryApplierFu
     }
 }
 
+void lh_dictionaryApplyFunctionWithMultipleParamete(LHDictionaryRef dictionary,LHDictionaryApplierFuntionWithParamters applier,void* context1,void* context2)
+{
+    if (dictionary == NULL || applier == NULL) {
+        return;
+    }
+    for (int i=0; i<dictionary->bucket_count; i++) {
+        _lh_map_bucket_t* bucket = dictionary->buckets[i];
+        if (bucket) {
+            struct _lh_map_node* node = bucket->first;
+            while (node) {
+                applier(node->key,node->value,context1,context2);
+                node = node->next;
+            }
+        }
+    }
+}
+
+void lh_dictionaryApplyFunctionWithIndex(LHDictionaryRef dictionary,LHDictionaryApplierFuntionWithIndex applier,void* context)
+{
+    if (dictionary == NULL || applier == NULL) {
+        return;
+    }
+    int index = -1;
+    for (int i=0; i<dictionary->bucket_count; i++) {
+        _lh_map_bucket_t* bucket = dictionary->buckets[i];
+        if (bucket) {
+            struct _lh_map_node* node = bucket->first;
+            while (node) {
+                index ++;
+                applier(node->key,node->value,context,index);
+                node = node->next;
+            }
+        }
+    }
+}
+
 void lh_dictionaryRelease(LHDictionaryRef dictionary)
 {
+    if (dictionary == NULL) {
+        return;
+    }
     lh_dictionaryRemoveAllValues(dictionary);
     free(dictionary->buckets);
     dictionary->buckets = NULL;

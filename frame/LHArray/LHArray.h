@@ -1,27 +1,27 @@
 //
 //  LHArray.h
-//  LHArray
+//  LHDB
 //
-//  Created by 李浩 on 16/6/4.
-//  Copyright © 2016年 李浩. All rights reserved.
+//  Created by 李浩 on 16/8/2.
+//  Copyright © 2016年 3wchina01. All rights reserved.
 //
 
 #ifndef LHArray_h
 #define LHArray_h
 
 #include <stdio.h>
-#include <MacTypes.h>
 #include <stdbool.h>
+#include <MacTypes.h>
 
 #define LH_EXTERN extern
 
 #define __BOOL bool
 
-typedef unsigned int lh_int;
-
 typedef struct lh_array* LHArrayRef;
 
-typedef void (*lh_arrayApplierFunction)(const void *value, void *context);
+typedef unsigned long lh_uint;
+
+typedef void (*lh_arrayApplierFunction)(lh_uint index,const void *value,const void *context);
 
 typedef void* (*lh_arrayValueRetain)(const void* value);
 
@@ -35,109 +35,50 @@ typedef struct {
     lh_arrayValueEqual equal;
 }LHArrayCallBacks;
 
+
 struct lh_array {
-    lh_int count;
+    uint count;
+    UInt64 bucket_count;
     LHArrayCallBacks callback;
-    struct lh_LinkNode* header;
-    struct lh_LinkNode* tail;
+    const void** bucket;
 };
-
-struct lh_LinkNode {
-    struct lh_LinkNode* prev;
-    struct lh_LinkNode* next;
-    void* value;
-};
-
 
 LH_EXTERN LHArrayCallBacks lh_default_string_callback;
 
-/**
- *@dis 创建数组
- */
-LHArrayRef lh_arrayCreate();
+LHArrayRef LHArrayCreate();
 
-/**
- *@dis 创建数组
- *@para 原数组
- *@return 返回的新数组
- */
-LHArrayRef lh_arrayCreateWithArray(LHArrayRef arrayRef,LHArrayCallBacks* callbacks);
+LHArrayRef LHArrayCreateWithCapacity(lh_uint capacity);
 
-LHArrayRef lh_arrayCreateWithCallBack(LHArrayCallBacks *callbacks);
+LHArrayRef LHArrayCreateWithOptions(lh_uint capacity,LHArrayCallBacks* callback);
 
-/**
- *@dis  返回数组长度
- */
-lh_int lh_arrayGetCount(LHArrayRef arrayRef);
+lh_uint LHArrayGetCount(LHArrayRef arrayRef);
 
-/**
- *@dis 遍历数组
- *@para applier 函数指针 遍历会回调applier
- *@para context 上下文
- */
-void lh_arrayApplyFunction(LHArrayRef arrayRef,lh_arrayApplierFunction applier,void* context);
+void LHArrayApplyFunction(LHArrayRef arrayRef,lh_arrayApplierFunction applier,const void* context);
 
-__BOOL lh_arrayContainValue(LHArrayRef arrayRef,void* value);
+__BOOL LHArrayContainValue(LHArrayRef arrayRef,const void* value);
 
-/**
- *@dis 在数组尾部插入数据
- */
-void lh_arrayAppentValue(LHArrayRef arrayRef,void* value);
+void LHArrayAppentValue(LHArrayRef arrayRef,const void* value);
 
-/**
- *@dis 在指定的位置插入数据
- */
-void lh_arrayInsertValueAtIndex(LHArrayRef arrayRef,lh_int index,void* value);
+void LHArrayInsertValueAtIndex(LHArrayRef arrayRef,lh_uint index,const void* value);
 
-/**
- *@dis 获取固定下标的数据
- */
-void* lh_arrayGetValueWithIndex(LHArrayRef arrayRef,lh_int index);
+void* LHArrayGetValueWithIndex(LHArrayRef arrayRef,lh_uint index);
 
-/**
- *@dis 获取数组第一个元素
- */
-void* lh_arrayGetFirstValue(LHArrayRef arrayRef);
+void* LHArrayGetFirstValue(LHArrayRef arrayRef);
 
-/**
- *@dis 获取数组最后一个元素
- */
-void* lh_arrayGetLastValue(LHArrayRef arrayRef);
+void* LHArrayGetLastValue(LHArrayRef arrayRef);
 
-/**
- *@dis 删除数组中指定下标的元素
- */
-void lh_arrayRemoveValueAtIndex(LHArrayRef arrayRef,lh_int index);
+void LHArrayRemoveValueAtIndex(LHArrayRef arrayRef,lh_uint index);
 
-/**
- *@dis 删除数组中最后一个元素
- */
-void lh_arrayRemoveLastValue(LHArrayRef arrayRef);
+void LHArrayRemoveLastValue(LHArrayRef arrayRef);
 
-/**
- *@dis 删除数组中第一个元素
- */
-void lh_arrayRemoveFirstValue(LHArrayRef arrayRef);
+void LHArrayRemoveFirstValue(LHArrayRef arrayRef);
 
-/**
- *@dis  删除数组中所有元素
- */
-void lh_arrayRemoveAllValue(LHArrayRef arrayRef);
+void LHArrayRemoveAllValue(LHArrayRef arrayRef);
 
-/**
- *@dis 交换数组中两个元素
- */
-void lh_arrayExchangeValuesAtIndexWithIndex(LHArrayRef arrayRef,lh_int fromIndex,lh_int toIndex);
+void LHArrayExchangeValuesAtIndexWithIndex(LHArrayRef arrayRef,lh_uint fromIndex,lh_uint toIndex);
 
+void LHArrayReplaceValueAtIndex(LHArrayRef arrayRef,lh_uint index,const void* value);
 
-/**
- *@dis 替换数组中指定下标的元素
- */
-void lh_arrayReplaceValueAtIndex(LHArrayRef arrayRef,lh_int index,void* value);
-
-/**
- *@dis  释放数组占用的内存 释放后无法再次使用
- */
-void lh_arrayRelease(LHArrayRef arrayRef);
+void LHArrayRelease(LHArrayRef arrayRef);
 
 #endif /* LHArray_h */
