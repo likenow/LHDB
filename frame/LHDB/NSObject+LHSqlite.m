@@ -24,8 +24,8 @@
         
         LHSqliteExecuteUpdate(sqlite, sqlStr, dic, &error);
         if (error) {
-            LHSqliteErrorFree(sqlite, error);
-            LHSqliteClose(sqlite, YES);
+            NSLog(@"error ===== %s sql === %s",error->error_msg,error->error_sql);
+            LHSqliteErrorFree(error);
             return NO;
         }
         return YES;
@@ -40,8 +40,8 @@
         
         LHArrayRef arrayRef = LHSqliteExecuteQuery(sqlite, sqlStr, &error);
         if (error) {
-            LHSqliteErrorFree(sqlite, error);
-            LHSqliteClose(sqlite, YES);
+            NSLog(@"queryError = %s  sql === %s",error->error_msg,error->error_sql);
+            LHSqliteErrorFree(error);
             return nil;
         }
         if (arrayRef == NULL) {
@@ -79,7 +79,18 @@
 
 + (BOOL)lh_createTable:(LHSqliteRef)sqlite
 {
-    return [self lh_sqliteExecuteQuery:sqlite sql:[self lh_statementForCreateTable]]();
+    return [self lh_sqliteExecuteUpdate:sqlite sql:[self lh_statementForCreateTable] dic:NULL]();
+}
+
++ (BOOL)lh_createTableWithContraints:(NSDictionary<NSString*,NSArray<NSNumber*>*>*)contraints
+{
+    return [self lh_createTable:CURRENT_SQLITE contraints:contraints];
+}
+
++ (BOOL)lh_createTable:(LHSqliteRef)sqlite contraints:(NSDictionary<NSString*,NSArray<NSNumber*>*>*)contraints
+{
+    char* sql_str = [self lh_statementForCreateTableWithConstraint:contraints];
+    return [self lh_sqliteExecuteUpdate:sqlite sql:sql_str dic:NULL]();
 }
 
 + (BOOL)lh_insertWith:(NSDictionary*)dic
@@ -171,6 +182,16 @@
 {
     char* sql_str = "ROLLBACK TRANSACTION";
     return [self lh_sqliteExecuteUpdate:sqlite sql:sql_str dic:NULL]();
+}
+
++ (void)lh_executeUpdateHandle:(void(^)())handle
+{
+    if (!handle) return;
+    if (![self lh_openDB]) return;
+    [self lh_beginTransaction];
+    handle();
+    [self lh_commit];
+    [self lh_closeDB];
 }
 
 @end

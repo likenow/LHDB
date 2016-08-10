@@ -33,8 +33,9 @@ typedef enum LHSqliteValueType {
 }LHSqliteValueType;
 
 typedef struct {
-    const char* error_msg;
     int error_code;
+    const char* error_sql;
+    const char* error_msg;
 }LHSqliteError;
 
 typedef struct {
@@ -90,7 +91,7 @@ LHArrayRef LHSqliteExecuteQuery(LHSqliteRef sqliteRef,const char* zSql,LHSqliteE
 
 __LHBOOL LHSqliteClose(LHSqliteRef sqliteRef,__LHBOOL onLock);
 
-void LHSqliteErrorFree(LHSqliteRef sqliteRef,LHSqliteError* sql_error);
+void LHSqliteErrorFree(LHSqliteError* sql_error);
 
 void LHSqliteValueRelease(LHSqliteValue* value);
 

@@ -19,7 +19,7 @@ static inline NSString* columnType(NSString* propertyType)
     }
     
     if ([propertyType isEqualToString:@"i"]||[propertyType isEqualToString:@"Q"]) {
-        return @"INT";
+        return @"INTEGER";
     }else if ([propertyType isEqualToString:@"f"]) {
         return @"FLOAT";
     }else if ([propertyType isEqualToString:@"B"]) {
@@ -55,6 +55,46 @@ static inline NSString* columnType(NSString* propertyType)
     return (char*)sql_str.UTF8String;
 }
 
+
++ (char*)lh_statementForCreateTableWithConstraint:(NSDictionary<NSString*,NSArray<NSNumber*>*>*)constraints;
+{
+    NSArray* constrains_keys = constraints.allKeys;
+    NSString* table_name = NSStringFromClass(self);
+    NSMutableString* sql_str = [NSMutableString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@",table_name];
+    NSDictionary* propertyInfo = [self lh_propertyInfo];
+    NSMutableString* column_str = [NSMutableString string];
+    [propertyInfo enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        NSString* column_name = [NSString stringWithFormat:@"%@",key];
+        NSString* column_type = columnType([NSString stringWithFormat:@"%@",obj]);
+        NSMutableString* constraint_str = [NSMutableString string];
+        if ([constrains_keys containsObject:column_name]) {
+            NSArray* constrains_value = constraints[column_name];
+            [constrains_value enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                LHSqliteConstraint constraint = [(NSNumber*)obj integerValue];
+                switch (constraint) {
+                    case LHSqliteConstraintNOTNULL:
+                        [constraint_str appendString:@" NOT NULL"];
+                        break;
+                    case LHSqliteConstraintPRIMARYKEY:
+                        [constraint_str appendString:@" PRIMARY KEY"];
+                        break;
+                    case LHSqliteConstraintUNIQUE:
+                        [constraint_str appendString:@" UNIQUE"];
+                    default:
+                        break;
+                }
+            }];
+        }
+        
+        [column_str appendFormat:@"%@ %@%@,",column_name,column_type,constraint_str];
+    }];
+    if (column_str.length>0) {
+        [column_str deleteCharactersInRange:NSMakeRange(column_str.length-1, 1)];
+    }
+    [sql_str appendFormat:@"(%@)",column_str];
+    return (void*)sql_str.UTF8String;
+}
+
 + (char*)lh_statementForAddColumn:(NSString*)columnName
 {
     NSString* sql_str = [NSString stringWithFormat:@"alter table %@ add %@ %@",NSStringFromClass(self),columnName,[self lh_propertyType:columnName]];
@@ -88,7 +128,7 @@ static inline NSString* columnType(NSString* propertyType)
         [sql_str appendString:key_str];
     }];
     [sql_str deleteCharactersInRange:NSMakeRange(sql_str.length-1, 1)];
-    [sql_str appendFormat:@"where %@",predicate.predicateFormat];
+    [sql_str appendFormat:@" where %@",predicate.predicateFormat];
     return (char*)sql_str.UTF8String;
 }
 
@@ -96,7 +136,7 @@ static inline NSString* columnType(NSString* propertyType)
 {
     NSMutableString* sql_str = [NSMutableString stringWithFormat:@"delete form %@ ",NSStringFromClass(self)];
     if (predicate.predicateFormat) {
-        [sql_str appendString:predicate.predicateFormat];
+        [sql_str appendFormat:@"where %@",predicate.predicateFormat];
     }
     return (char*)sql_str.UTF8String;
 }
@@ -105,10 +145,10 @@ static inline NSString* columnType(NSString* propertyType)
 {
     NSMutableString* sql_str = [NSMutableString stringWithFormat:@"select * from %@",NSStringFromClass(self)];
     if (predicate.predicateFormat) {
-        [sql_str appendFormat:@" %@",predicate.predicateFormat];
+        [sql_str appendFormat:@" where %@",predicate.predicateFormat];
     }
     if (predicate.sortDescriptor) {
-        [sql_str appendFormat:@" %@",predicate.sortDescriptor];
+        [sql_str appendFormat:@" order by %@",predicate.sortDescriptor];
     }
     return (char*)sql_str.UTF8String;
 }

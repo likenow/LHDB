@@ -18,7 +18,7 @@ typedef NSArray*(^executeQuery)(void);
 
 /**
  @dis 打开数据库,会启动一个锁,当执行closeDB时释放锁。
-      每个线程在执行数据库任务时都应该调用openDB;
+ 每个线程在执行数据库任务时都应该调用openDB;
  */
 + (BOOL)lh_openDB;
 
@@ -44,6 +44,15 @@ typedef NSArray*(^executeQuery)(void);
 
 + (BOOL)lh_createTable:(LHSqliteRef)sqlite;
 
+
+/**
+ @dis 建表,添加约束
+ @prarm contraints 一个约束的字典,key对应表的cloumn value对应一个存放约束的数组 数组中对应LHSqliteConstraint枚举
+ */
++ (BOOL)lh_createTableWithContraints:(NSDictionary<NSString*,NSArray<NSNumber*>*>*)contraints;
+
++ (BOOL)lh_createTable:(LHSqliteRef)sqlite contraints:(NSDictionary<NSString*,NSArray<NSNumber*>*>*)contraints;
+
 /**
  @dis 插入数据
  */
@@ -59,7 +68,7 @@ typedef NSArray*(^executeQuery)(void);
 + (BOOL)lh_insertWith:(NSDictionary*)dic sqlite:(LHSqliteRef)sqlite;
 
 /**
- @param dic  更新数据 
+ @param dic  更新数据
  @prarm predicate 范围,相当于NSPredicate
  */
 + (BOOL)lh_updateWith:(NSDictionary*)dic predicate:(LHPredicate*)predicate;
@@ -99,5 +108,10 @@ typedef NSArray*(^executeQuery)(void);
 + (BOOL)lh_rollback;
 
 + (BOOL)lh_rollback:(LHSqliteRef)sqlite;
+
+/**
+ @dis 数据库的更新执行,无需打开数据库,只需将更新操作放入handle中
+ */
++ (void)lh_executeUpdateHandle:(void(^)())handle;
 
 @end

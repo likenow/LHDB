@@ -283,17 +283,22 @@ typedef struct {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         dic = [NSMutableDictionary dictionary];
+    });
+    NSDictionary* classInfo = dic[NSStringFromClass(self)];
+    if (!classInfo) {
+        classInfo = [NSMutableDictionary dictionary];
         unsigned int count = 0;
         objc_property_t* property_t = class_copyPropertyList(self, &count);
         for (int i=0; i<count; i++) {
             objc_property_t propert = property_t[i];
             NSString* propertyName = [NSString stringWithUTF8String:property_getName(propert)];
             NSString* propertyType = [NSString stringWithUTF8String:property_getAttributes(propert)];
-            [dic setValue:objectType(propertyType) forKey:propertyName];
+            [classInfo setValue:objectType(propertyType) forKey:propertyName];
         }
         free(property_t);
-    });
-    return dic;
+        [dic setValue:classInfo forKey:NSStringFromClass(self)];
+    }
+    return classInfo;
 }
 
 + (NSString*)lh_propertyType:(NSString*)name

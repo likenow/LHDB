@@ -9,9 +9,17 @@
 #import <Foundation/Foundation.h>
 
 @class LHPredicate;
+
+typedef NS_ENUM(NSUInteger,LHSqliteConstraint) {
+    LHSqliteConstraintNOTNULL = 1<<3,
+    LHSqliteConstraintUNIQUE = 1<<4,
+    LHSqliteConstraintPRIMARYKEY = 1<<5
+};
 @interface NSObject (SQLStateMent)
 
 + (char*)lh_statementForCreateTable;
+
++ (char*)lh_statementForCreateTableWithConstraint:(NSDictionary<NSString*,NSArray<NSNumber*>*>*)constraints;
 
 + (char*)lh_statementForAddColumn:(NSString*)columnName;
 

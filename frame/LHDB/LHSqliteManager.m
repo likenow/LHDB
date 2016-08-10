@@ -40,9 +40,22 @@
     return self;
 }
 
+- (void)setSqlitePath:(NSString *)sqlitePath
+{
+    void (^handle)() = ^(){
+        _sqlitePath = [sqlitePath copy];
+        self.currentSqlite = [self sqliteWithPath:sqlitePath];
+    };
+    [sqlitePath isEqualToString:_sqlitePath]?:handle();
+    
+}
+
 - (LHSqliteRef)currentSqlite
 {
-    return [self sqliteWithPath:_sqlitePath];
+    if (!_currentSqlite) {
+        _currentSqlite = [self sqliteWithPath:_sqlitePath];
+    }
+    return _currentSqlite;
 }
 
 - (LHSqliteRef)sqliteWithPath:(NSString*)sqlitePath

@@ -61,6 +61,7 @@ __STATIC__INLINE sqlite3_stmt* __LHSqlitePrepareSql(LHSqliteRef sqliteRef,const 
                 }
                 (*error)->error_code = sqlite3_errcode(sqliteRef->_db);
                 (*error)->error_msg = strdup(sqlite3_errmsg(sqliteRef->_db));
+                (*error)->error_sql = strdup(zSql);
             }
         }
     }else
@@ -147,6 +148,7 @@ __STATIC__INLINE void __LHSqliteStepUpdate(LHSqliteRef sqliteRef,sqlite3_stmt* s
             }
             (*error)->error_code = sqlite3_errcode(sqliteRef->_db);
             (*error)->error_msg = strdup(sqlite3_errmsg(sqliteRef->_db));
+            (*error)->error_sql = NULL;
         }
     }
 }
@@ -257,6 +259,7 @@ __STATIC__INLINE __LHBOOL __LHSqliteOpen(LHSqliteRef sqliteRef,__LHBOOL onLock)
         return true;
     }
     sqlite3_close(sqliteRef->_db);
+    printf("数据库打开失败\n");
     __UNLOCK;
     return false;
 }
@@ -280,6 +283,7 @@ __STATIC__INLINE __LHBOOL __LHSqliteOpen_e(LHSqliteRef sqliteRef,LHSqliteError**
         }
         (*error)->error_code = sqlite3_errcode(sqliteRef->_db);
         (*error)->error_msg = strdup(sqlite3_errmsg(sqliteRef->_db));
+        (*error)->error_sql = NULL;
     }
     sqlite3_close(sqliteRef->_db);
     __UNLOCK;
@@ -408,14 +412,14 @@ void LHSqliteClearStmtCache(LHSqliteRef sqliteRef)
     lh_dictionaryRemoveAllValues(sqliteRef->_cacheStmt);
 }
 
-void LHSqliteErrorFree(LHSqliteRef sqliteRef,LHSqliteError* sql_error)
+void LHSqliteErrorFree(LHSqliteError* sql_error)
 {
-    if (sqliteRef == NULL) {
-        return;
-    }
     if (sql_error) {
         if (sql_error->error_msg) {
             free((void*)sql_error->error_msg);
+        }
+        if (sql_error->error_sql) {
+            free((void*)sql_error->error_sql);
         }
         free(sql_error);
     }
