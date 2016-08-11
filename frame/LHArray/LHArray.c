@@ -8,6 +8,7 @@
 
 #include "LHArray.h"
 #include <stdlib.h>
+#include <string.h>
 
 static float relloc_count = 1.5;
 
