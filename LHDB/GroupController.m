@@ -73,7 +73,7 @@
     NSURL* url = [NSURL URLWithString:@"http://interface2.ejiandu.com/api/easemob/getGroups"];
     NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
     request.HTTPMethod = @"POST";
-    request.HTTPBody = [[NSString stringWithFormat:@"{\"token\":\"7f427da6-6e6a-48ca-b0cc-9e6965d236dd\"}"] dataUsingEncoding:NSUTF8StringEncoding];
+    request.HTTPBody = [[NSString stringWithFormat:@"{\"token\":\"403590f5-6b4c-42a3-9f3c-33322a930401\"}"] dataUsingEncoding:NSUTF8StringEncoding];
     NSURLSession* session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
     NSURLSessionDataTask* task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if (!error) {

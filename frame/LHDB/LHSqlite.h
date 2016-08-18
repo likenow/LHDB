@@ -64,7 +64,6 @@ struct lh_sqlite {
     LHDictionaryRef _cacheStmt;
 };
 
-
 typedef struct lh_sqlite* LHSqliteRef;
 
 LHSqliteRef LHSqliteCreateWithFileName(const void* fileName);

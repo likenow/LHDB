@@ -80,6 +80,13 @@ static inline NSString* columnType(NSString* propertyType)
                         break;
                     case LHSqliteConstraintUNIQUE:
                         [constraint_str appendString:@" UNIQUE"];
+                        break;
+                    case LHSqliteConstraintAUTOINCREMENT:
+                        [constraint_str appendString:@" AUTOINCREMENT"];
+                        break;
+                    case LHSqliteConstraintFOREIGNKEY:
+                        
+                        break;
                     default:
                         break;
                 }

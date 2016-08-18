@@ -13,7 +13,9 @@
 typedef NS_ENUM(NSUInteger,LHSqliteConstraint) {
     LHSqliteConstraintNOTNULL = 1<<3,
     LHSqliteConstraintUNIQUE = 1<<4,
-    LHSqliteConstraintPRIMARYKEY = 1<<5
+    LHSqliteConstraintPRIMARYKEY = 1<<5,
+    LHSqliteConstraintAUTOINCREMENT = 1<<6, /** 自增  只对整形有用 */
+    LHSqliteConstraintFOREIGNKEY = 1<<7 /** 外键约束,iOS的sqlite3默认不开启外键,需手动开启,LHDB默认在每次打开数据库时都会开启外键 */
 };
 @interface NSObject (SQLStateMent)
 

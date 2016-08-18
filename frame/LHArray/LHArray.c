@@ -37,7 +37,6 @@ __STATIC__INLINE bool lh_arrayReallocBucket(LHArrayRef array)
     return true;
 }
 
-
 LHArrayCallBacks lh_default_string_callback = {
     (lh_arrayValueRetain)strdup,
     (lh_arrayValueRelease)free,
