@@ -180,6 +180,7 @@
 #pragma mark- 从网络取数据
 - (void)loadDataFromInter
 {
+    typeof(self) __weak weakSelf = self;
     NSURL* url = [NSURL URLWithString:@"http://interface2.ejiandu.com/api/easemob/getFriends"];
     NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
     request.HTTPMethod = @"POST";
@@ -190,12 +191,21 @@
             dispatch_async(dispatch_get_global_queue(0, 0), ^{
                 NSDictionary* dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
                 if (dic.count>0) {
-                    [FriendModel lh_openDB];
-                    [self importData:dic[@"Data"]];
-                    self.dataSource = [self loadDataFromSQL];
-                    [FriendModel lh_closeDB];
+                    /*
+                     [FriendModel lh_openDB];
+                     [self importData:dic[@"Data"]];
+                     self.dataSource = [self loadDataFromSQL];
+                     [FriendModel lh_closeDB];
+                     dispatch_async(dispatch_get_main_queue(), ^{
+                     [self.tableView reloadData];
+                     });
+                     或者如下：*/
+                    [FriendModel lh_executeUpdateHandle:^{
+                        [weakSelf importData:dic[@"Data"]];
+                        weakSelf.dataSource = [self loadDataFromSQL];
+                    }];
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        [self.tableView reloadData];
+                        [weakSelf.tableView reloadData];
                     });
                 }
             });
